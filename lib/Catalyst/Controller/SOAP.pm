@@ -14,6 +14,14 @@
         )
     }
 
+    # this is implemented as to respond a SOAP message according to
+    # what has been sent to $c->stash->{soap}
+    sub End : Private {
+        my ($self, $c) = (shift, shift);
+        return $self->NEXT::End($c, @_) unless $c->stash->{soap};
+        
+    }
+
 };
 
 { package Catalyst::Controller::SOAP::Helper;
@@ -47,14 +55,14 @@ Catalyst::Controller::SOAP -- Catalyst SOAP Controller
 
     # available in "/example" as operation "ping". The arguments are
     # treated as a literal document and passed to the method as a
-    # XML::DOM::XPath object
+    # XML::LibXML object
     sub ping : SOAP('RPCLiteral') {
         my ( $self, $c, $xml) = @_;
         my $name = $xml->findValue('some xpath expression');
     }
 
     # avaiable as "/example/world" in document context. The entire body
-    # is delivered to the method as a XML::DOM::XPath object.
+    # is delivered to the method as a XML::LibXML object.
     sub world : SOAP('DocLiteral') {
         my ($self, $c, $doc) = @_;
     }
@@ -106,7 +114,7 @@ The original SOAP envelope as string.
 
 =item $c->stash->{soap}->parsed_envelope()
 
-The parsed envelope as an XML::DOM::XPath object.
+The parsed envelope as an XML::LibXML object.
 
 =item $c->stash->{soap}->arguments()
 
@@ -146,7 +154,7 @@ from the message and dispatching the correct method.
 
 =head1 SEE ALSO
 
-L<Catalyst::Action::SOAP>, L<XML::DOM::XPath>,
+L<Catalyst::Action::SOAP>, L<XML::LibXML>,
 L<Catalyst::Action::SOAP::DocLiteral>,
 L<Catalyst::Action::SOAP::RPCEncoded>,
 L<Catalyst::Action::SOAP::HTTPGet>
