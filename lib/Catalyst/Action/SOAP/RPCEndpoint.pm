@@ -10,7 +10,7 @@
       $self->prepare_soap_xml_post($c);
       unless ($c->stash->{soap}->fault) {
           my $envelope = $c->stash->{soap}->parsed_envelope;
-          my ($body) = $envelope->getElementsByTagName('body',0)
+          my ($body) = $envelope->getElementsByTagName('Body',0);
           my @children = $body->getChildNodes();
           if (scalar @children != 1) {
               $c->stash->{soap}->fault
@@ -18,12 +18,12 @@
                    reason => 'Bad Body', detail =>
                    'RPC messages should contain only one element inside body'})
             } else {
-                my $operation = $children[0]->getNodeName();
+                my $operation = $children[0]->nodeName();
                 my $arguments = $children[0]->getChildNodes();
                 $c->stash->{soap}->arguments($arguments);
-                if ($controller->action_for($operation)->attributes->{ActionClass} !~ /RPC(Encoded|Literal)/) {
+                if (!grep { /RPC(Encoded|Literal)/ } @{$controller->action_for($operation)->attributes->{ActionClass}}) {
                     $c->stash->{soap}->fault
-                      ({ code => { env:Sender => 'env:Body' },
+                      ({ code => { 'env:Sender' => 'env:Body' },
                          reason => 'Bad Operation', detail =>
                          'Invalid Operation'})
                 } else {

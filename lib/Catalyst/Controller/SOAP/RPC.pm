@@ -1,7 +1,7 @@
 { package Catalyst::Controller::SOAP::RPC;
   use strict;
   use base qw(Catalyst::Controller::SOAP);
-  sub rpc_endpoint :Path('') :SOAPRPCEndpoint { };
+  sub rpc_endpoint :Path('') :SOAP('RPCEndpoint') { };
 };
 
 1;

@@ -21,7 +21,8 @@
       my ($self, $c) = @_;
       if ($c->req->content_type =~ /application\/soap\+xml/ &&
           $c->req->method eq 'POST') {
-          my $xml_str = $c->req->body;
+          my $body = $c->req->body;
+          my $xml_str = join '', <$body>;
           eval {
               $c->stash->{soap}->envelope($xml_str);
               $c->stash->{soap}->parsed_envelope($self->xml_parser->parse_string($xml_str));

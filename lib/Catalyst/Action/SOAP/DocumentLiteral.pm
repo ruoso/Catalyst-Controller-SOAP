@@ -9,7 +9,7 @@
       $self->prepare_soap_xml_post($c);
       unless ($c->stash->{soap}->fault) {
           my $envelope = $c->stash->{soap}->parsed_envelope;
-          my ($body) = $envelope->getElementsByTagName('body',0);
+          my ($body) = $envelope->getElementsByTagName('Body',0);
           $self->NEXT::execute($controller, $c, $body);
       }
   }
