@@ -1,8 +1,10 @@
-{ package Catalyst::Controller::SOAP;
+{   package Catalyst::Controller::SOAP;
 
     use strict;
     use base qw/Catalyst::Controller/;
+    use XML::LibXML;
 
+    use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
     our $VERSION = '0.0.1';
 
     sub _parse_SOAP_Attr {
@@ -18,19 +20,95 @@
     # what has been sent to $c->stash->{soap}
     sub End : Private {
         my ($self, $c) = (shift, shift);
-        return $self->NEXT::End($c, @_) unless $c->stash->{soap};
-        
+        my $soap = $c->stash->{soap};
+
+        return $self->NEXT::End($c, @_) unless $soap;
+
+        my $response = XML::LibXML->createDocument();
+
+        my $envelope = $response->createElementNS
+          (NS_SOAP_ENV,"Envelope");
+
+        $response->setDocumentElement($envelope);
+
+        # TODO: we don't support header generation in response yet.
+
+        my $body = $response->createElementNS
+          (NS_SOAP_ENV,"Body");
+
+        $envelope->appendChild($body);
+
+        if ($soap->fault) {
+            my $fault = $response->createElementNS
+              (NS_SOAP_ENV, "Fault");
+            $body->appendChild($fault);
+
+            my $code = $response->createElementNS
+              (NS_SOAP_ENV, "Code");
+            $fault->appendChild($code);
+
+            $self->_generate_Fault_Code($response,$code,$soap->{code});
+
+            if ($soap->fault->{reason}) {
+                my $reason = $response->createElementNS
+                  (NS_SOAP_ENV, "Reason");
+                $fault->appendChild($reason);
+                # TODO: we don't support the xml:lang attribute yet.
+                my $text = $response->createElementNS
+                  (NS_SOAP_ENV, "Text");
+                $reason->appendChild($text);
+                $text->appendText($soap->fault->{reason});
+            }
+            if ($soap->fault->{detail}) {
+                my $detail = $response->createElementNS
+                  (NS_SOAP_ENV, "Detail");
+                $fault->appendChild($detail);
+                # TODO: we don't support the xml:lang attribute yet.
+                my $text = $response->createElementNS
+                  (NS_SOAP_ENV, "Text");
+                $detail->appendChild($text);
+                $text->appendText($soap->fault->{detail});
+            }
+        } else {
+            # TODO: Generate the body.
+            # At this moment, for the sake of getting something ready,
+            # let's implement the string return.
+            if ($soap->string_return) {
+                $body->appendText($soap->string_return);
+            }
+        }
+
+        $c->res->body($envelope->toString());
+    }
+
+    sub _generate_Fault_Code {
+        my ($self, $document, $codenode, $codevalue) = @_;
+
+        my $value = $document->createElementNS
+          (NS_SOAP_ENV, "Value");
+        if (ref $codeValue eq 'ARRAY') {
+            $value->appendText($codeValue->[0]);
+            my $subcode = $document->createElementNS
+              (NS_SOAP_ENV, 'SubCode');
+            $codenode->appendChild($value);
+            $codenode->appendChild($subcode);
+            $self->_generate_Fault_Code($document, $subcode, $codeValue->[1]);
+        } else {
+            $value->appendText($codeValue);
+            $codenode->appendChild($value);
+        }
     }
 
 };
 
-{ package Catalyst::Controller::SOAP::Helper;
+{   package Catalyst::Controller::SOAP::Helper;
 
-  use base qw(Class::Accessor::Fast);
+    use base qw(Class::Accessor::Fast);
 
-  __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments error
+    __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments error
                                encoded_return literal_return
                                literal_string_return string_return});
+
 
 };
 
@@ -120,9 +198,12 @@ The parsed envelope as an XML::LibXML object.
 
 The arguments of a RPC call.
 
-=item $c->stash->{soap}->error($c,[$code,$message])
+=item $c->stash->{soap}->fault({code => $code,reason => $reason, detail => $detail])
 
-Allows you to set fault code and message
+Allows you to set fault code and message. Optionally, you may define
+the code itself as an arrayref where the first item will be this code
+and the second will be the subcode, which recursively may be another
+arrayref.
 
 =item $c->stash->{soap}->encoded_return(\@data)
 
