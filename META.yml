@@ -1,0 +1,16 @@
+--- #YAML:1.0
+name: Catalyst-Controller-SOAP
+abstract: Add SOAP features to the Catalyst Framework
+version: 0.0.1
+author:
+  - Daniel Ruoso <daniel.ruoso@verticalone.pt>
+license: perl
+distribution_type: module
+requires:
+  XML::LibXML: 0
+  Catalyst::Controller: 5.7000
+meta-spec:
+  version: 1.3
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+resources:
+  repository: http://people.debian.org/~ruoso/Catalyst-Controller-SOAP/

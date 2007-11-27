@@ -7,10 +7,10 @@
     use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
     our $VERSION = '0.0.1';
 
-    sub _parse_SOAP_Attr {
+    sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
-        my $actionclass = $value =~ /^+/ ? $value :
-          'SOAP::'.$value;
+        my $actionclass = ($value =~ /^\+/ ? $value :
+          'Catalyst::Action::SOAP::'.$value);
         (
          ActionClass => $actionclass,
         )
@@ -18,11 +18,11 @@
 
     # this is implemented as to respond a SOAP message according to
     # what has been sent to $c->stash->{soap}
-    sub End : Private {
+    sub end : Private {
         my ($self, $c) = (shift, shift);
         my $soap = $c->stash->{soap};
 
-        return $self->NEXT::End($c, @_) unless $soap;
+        return $self->NEXT::end($c, @_) unless $soap;
 
         my $response = XML::LibXML->createDocument();
 
@@ -47,7 +47,7 @@
               (NS_SOAP_ENV, "Code");
             $fault->appendChild($code);
 
-            $self->_generate_Fault_Code($response,$code,$soap->{code});
+            $self->_generate_Fault_Code($response,$code,$soap->fault->{code});
 
             if ($soap->fault->{reason}) {
                 my $reason = $response->createElementNS
@@ -82,7 +82,7 @@
     }
 
     sub _generate_Fault_Code {
-        my ($self, $document, $codenode, $codevalue) = @_;
+        my ($self, $document, $codenode, $codeValue) = @_;
 
         my $value = $document->createElementNS
           (NS_SOAP_ENV, "Value");
@@ -99,13 +99,14 @@
         }
     }
 
+
 };
 
 {   package Catalyst::Controller::SOAP::Helper;
 
     use base qw(Class::Accessor::Fast);
 
-    __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments error
+    __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments fault
                                encoded_return literal_return
                                literal_string_return string_return});
 
@@ -118,7 +119,7 @@ __END__
 
 =head1 NAME
 
-Catalyst::Controller::SOAP -- Catalyst SOAP Controller
+Catalyst::Controller::SOAP - Catalyst SOAP Controller
 
 =head1 SYNOPSIS
 
@@ -149,14 +150,16 @@ Catalyst::Controller::SOAP -- Catalyst SOAP Controller
     # dispatched. This code won't be executed at all.
     sub index : SOAP('RPCEndpoint') {}
 
+=head1 ABSTACT
+
+Implements SOAP serving support in Catalyst.
+
 =head1 DESCRIPTION
 
 SOAP Controller for Catalyst which we tried to make compatible with
-the way Catalyst works with URLS.
-
-It is important to notice that this controller declares by default an
-index operation which will dispatch the RPC operations under this
-class.
+the way Catalyst works with URLS.It is important to notice that this
+controller declares by default an index operation which will dispatch
+the RPC operations under this class.
 
 =back
 

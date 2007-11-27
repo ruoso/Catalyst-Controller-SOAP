@@ -1,14 +1,14 @@
 { package Catalyst::Action::SOAP;
 
   use base qw/Catalyst::Action/;
-  use XML::DOM::XPath;
+  use XML::LibXML;
 
   __PACKAGE__->mk_accessors(qw/xml_parser/);
 
   sub new {
       my $class = shift;
       my $self = $class->SUPER::new(@_);
-      $self->xml_parser(XML::DOM::Parser->new());
+      $self->xml_parser(XML::LibXML->new());
       return $self;
   }
 
@@ -24,7 +24,7 @@
           my $xml_str = $c->req->body;
           eval {
               $c->stash->{soap}->envelope($xml_str);
-              $c->stash->{soap}->parsed_envelope($self->xml_parser->parse($xml_str));
+              $c->stash->{soap}->parsed_envelope($self->xml_parser->parse_string($xml_str));
           };
           if ($@) {
               $c->stash->{soap}->fault({ code => 'env:Sender', reason => 'Bad XML Message', detail => $@});
