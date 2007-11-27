@@ -1,0 +1,10 @@
+Changes
+Makefile.PL
+MANIFEST
+ppport.h
+README
+SOAP.xs
+t/Catalyst-Controller-SOAP.t
+fallback/const-c.inc
+fallback/const-xs.inc
+lib/Catalyst/Controller/SOAP.pm
