@@ -42,7 +42,8 @@ sub soap_xml_post {
 
     my ($writer, $reader, $error) = map { gensym() } 1..3;
     my $pid = open3($writer, $reader, $error,
-        $^X, '-I'.catfile(qw(blib lib)), '-I'.catfile(qw(lib)), catfile(qw(t PostApp script postapp_cgi.pl)));
+                    $^X, (map { '-I'.$_ } @INC),
+                    catfile(qw(t PostApp script postapp_cgi.pl)));
 
     print {$writer} $content;
     close $content;

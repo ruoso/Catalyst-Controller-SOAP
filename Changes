@@ -1,3 +1,49 @@
+commit 8bea90e61c8aa0cf269da57b9ccbe33987ca76c8
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Mon Nov 26 11:14:25 2007 +0000
+
+    marking new release fixing errors pointed by CPANTESTERS...
+
+commit fd36b65bea45660841790d2716ac330cc506586b
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Mon Nov 26 11:12:34 2007 +0000
+
+    Revert "Revert "PostApp now calls the interpreter with all the directories in @INC. PostApp app no longer depends on any plugin.""
+    
+    This reverts commit 58704caa35fdc5581366007aafd37cc393a94775.
+
+commit 58704caa35fdc5581366007aafd37cc393a94775
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Mon Nov 26 11:11:58 2007 +0000
+
+    Revert "PostApp now calls the interpreter with all the directories in @INC. PostApp app no longer depends on any plugin."
+    
+    This reverts commit 46870ad634f5a8228d7af797117219369dc107db.
+
+commit 46870ad634f5a8228d7af797117219369dc107db
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Mon Nov 26 11:09:35 2007 +0000
+
+    PostApp now calls the interpreter with all the directories in @INC. PostApp app no longer depends on any plugin.
+
+commit 54c6bf1c90e55eb83330ce0fb9f5cd686ac63d11
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Thu Nov 22 18:26:32 2007 +0000
+
+    marking a new release and leaving RPCEncoded out of it.
+
+commit 587c81026d0a8d13d27a124cf9175e0c2d5528d7
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Wed Nov 21 18:34:26 2007 +0000
+
+    removing directory entries from MANIFEST
+
+commit 1931438d732fe7e51942d6bc69b454e5e4dcf97a
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Wed Nov 21 18:33:27 2007 +0000
+
+    Updating changes file
+
 commit 9303bc1e368afb6def74573941eaf459f58533bc
 Author: Daniel Ruoso <daniel@ruoso.com>
 Date:   Wed Nov 21 18:33:13 2007 +0000
