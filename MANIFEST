@@ -8,15 +8,10 @@ t/PostApp.t
 t/lib/TestApp/Controller/WS.pm
 t/lib/TestApp/Controller/Root.pm
 t/lib/TestApp.pm
-t/PostApp
-t/PostApp/script
 t/PostApp/script/postapp_cgi.pl
 t/PostApp/script/postapp_test.pl
 t/PostApp/script/post.pl
 t/PostApp/script/postapp_server.pl
-t/PostApp/lib
-t/PostApp/lib/PostApp
-t/PostApp/lib/PostApp/Controller
 t/PostApp/lib/PostApp/Controller/WS.pm
 t/PostApp/lib/PostApp/Controller/Root.pm
 t/PostApp/lib/PostApp/Controller/WS2.pm
@@ -27,6 +22,5 @@ lib/Catalyst/Action/SOAP/DocumentLiteral.pm
 lib/Catalyst/Action/SOAP/HTTPGet.pm
 lib/Catalyst/Action/SOAP/RPCEndpoint.pm
 lib/Catalyst/Action/SOAP/RPCLiteral.pm
-lib/Catalyst/Action/SOAP/RPCEncoded.pm
 lib/Catalyst/Controller/SOAP.pm
 lib/Catalyst/Controller/SOAP/RPC.pm

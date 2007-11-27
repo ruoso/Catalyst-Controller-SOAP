@@ -5,7 +5,7 @@
     use XML::LibXML;
 
     use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
-    our $VERSION = '0.0.6';
+    our $VERSION = '0.1';
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
@@ -75,6 +75,14 @@
             # let's implement the string return.
             if ($soap->string_return) {
                 $body->appendText($soap->string_return);
+            } elsif (my $lit = $soap->literal_return) {
+                if (ref $lit eq 'XML::LibXML::NodeList') {
+                    for ($lit->get_nodelist) {
+                        $body->appendChild($_);
+                    }
+                } else {
+                    $body->appendChild($lit);
+                }
             }
         }
 
@@ -107,8 +115,7 @@
     use base qw(Class::Accessor::Fast);
 
     __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments fault
-                               encoded_return literal_return
-                               literal_string_return string_return});
+                               encoded_return literal_return string_return});
 
 
 };
@@ -126,15 +133,10 @@ Catalyst::Controller::SOAP - Catalyst SOAP Controller
     package MyApp::Controller::Example;
     use base 'Catalyst::Controller::SOAP';
 
-    # available in "/example" as operation "echo"
-    # parsing the arguments as soap-encoded.
-    sub echo : SOAP('RPCEncoded') {
-        my ( $self, $c, @args ) = @_;
-    }
-
     # available in "/example" as operation "ping". The arguments are
     # treated as a literal document and passed to the method as a
     # XML::LibXML object
+    # Using XML::Compile here will help you reading the message.
     sub ping : SOAP('RPCLiteral') {
         my ( $self, $c, $xml) = @_;
         my $name = $xml->findValue('some xpath expression');
@@ -142,13 +144,22 @@ Catalyst::Controller::SOAP - Catalyst SOAP Controller
 
     # avaiable as "/example/world" in document context. The entire body
     # is delivered to the method as a XML::LibXML object.
-    sub world : SOAP('DocumentLiteral') {
-        my ($self, $c, $doc) = @_;
+    # Using XML::Compile here will help you reading the message.
+    sub world :Local SOAP('DocumentLiteral')  {
+        my ($self, $c, $xml) = @_;
+    }
+
+    # avaiable as "/example/get" in HTTP get context.
+    # the get attributes will be available as any other
+    # get operation in Catalyst.
+    sub get :Local SOAP('HTTPGet')  {
+        my ($self, $c) = @_;
     }
 
     # this is the endpoint from where the RPC operations will be
     # dispatched. This code won't be executed at all.
-    sub index : SOAP('RPCEndpoint') {}
+    # See Catalyst::Controller::SOAP::RPC.
+    sub index :Local SOAP('RPCEndpoint') {}
 
 =head1 ABSTACT
 
@@ -160,8 +171,6 @@ SOAP Controller for Catalyst which we tried to make compatible with
 the way Catalyst works with URLS.It is important to notice that this
 controller declares by default an index operation which will dispatch
 the RPC operations under this class.
-
-=back
 
 =head1 ATTRIBUTES
 
@@ -212,16 +221,15 @@ arrayref.
 
 This method will prepare the return value to be a soap encoded data.
 
+  # TODO: At this moment, only Literals are working...
+
 =item $c->stash->{soap}->literal_return($xml_node)
 
 This method will prepare the return value to be a literal XML
 document, in this case, you can pass just the node that will be the
-root in the return message.
+root in the return message or a nodelist.
 
-=item $c->stash->{soap}->literal_string_return($xml_text)
-
-In this case, the argument is used literally inside the message. It is
-supposed to already contain all namespace definitions in it.
+Using XML::Compile will help to elaborate schema based returns.
 
 =item $c->stash->{soap}->string_return($non_xml_text)
 
@@ -232,15 +240,25 @@ message.
 
 =head1 TODO
 
-At this moment, this is a very early release. So almost everything is
-still to be done. The only thing done right now is getting the body
-from the message and dispatching the correct method.
+At this moment, almost everything is still to be done. The only thing
+done right now is getting the body from the message and dispatching
+the correct method. It is strongly recommended to use XML::Compile as
+a tool to deal with the XML nodes.
+
+The SOAP Encoding support is also missing, when that is ready you'll
+be able to do something like the code below:
+
+    # available in "/example" as operation "echo"
+    # parsing the arguments as soap-encoded.
+    sub echo : SOAP('RPCEncoded') {
+        my ( $self, $c, @args ) = @_;
+    }
 
 =head1 SEE ALSO
 
-L<Catalyst::Action::SOAP>, L<XML::LibXML>,
+L<Catalyst::Action::SOAP>, L<XML::LibXML>, L<XML::Compile>
 L<Catalyst::Action::SOAP::DocumentLiteral>,
-L<Catalyst::Action::SOAP::RPCEncoded>,
+L<Catalyst::Action::SOAP::RPCLiteral>,
 L<Catalyst::Action::SOAP::HTTPGet>
 
 =head1 AUTHORS

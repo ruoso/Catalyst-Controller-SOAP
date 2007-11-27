@@ -10,4 +10,19 @@ sub hello : Local SOAP('DocumentLiteral') {
     $c->stash->{soap}->string_return('Hello '.$who.'!');
 }
 
+sub foo : Local SOAP('DocumentLiteral') {
+    my ( $self, $c, $body ) = @_;
+    my $who = $body->textContent();
+
+    my $env = $c->stash->{soap}->parsed_envelope;
+    my $foo = $env->createElement('foo');
+    my $bar = $env->createElement('bar');
+    $foo->appendChild($bar);
+    my $baz = $env->createElement('baz');
+    $bar->appendChild($baz);
+    $baz->appendText('Hello '.$who.'!');
+
+    $c->stash->{soap}->literal_return($foo);
+}
+
 1;

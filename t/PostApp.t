@@ -1,4 +1,4 @@
-use Test::More tests => 2;
+use Test::More tests => 3;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -17,9 +17,13 @@ $response = soap_xml_post
   ('/ws2',
    '<Envelope><Body><hello>World</hello></Body></Envelope>'
   );
-
 ok($response->content =~ /Hello World/, 'RPC Literal Correct response: '.$response->content);
 
+$response = soap_xml_post
+  ('/ws/foo',
+   '<Envelope><Body>World</Body></Envelope>'
+  );
+ok($response->content =~ /\<foo\>\<bar\>\<baz\>Hello World\!\<\/baz\>\<\/bar\>\<\/foo\>/, 'Literal response: '.$response->content);
 
 sub soap_xml_post {
     my $path = shift;
