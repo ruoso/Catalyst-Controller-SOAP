@@ -41,7 +41,7 @@ __END__
 
 =head1 NAME
 
-Catalyst::Controller::SOAP::Action::RPCEndpoint - RPC Dispatcher
+Catalyst::Action::SOAP::RPCEndpoint - RPC Dispatcher
 
 =head1 SYNOPSIS
 

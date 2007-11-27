@@ -5,7 +5,7 @@
     use XML::LibXML;
 
     use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
-    our $VERSION = '0.0.3';
+    our $VERSION = '0.0.4';
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
@@ -142,7 +142,7 @@ Catalyst::Controller::SOAP - Catalyst SOAP Controller
 
     # avaiable as "/example/world" in document context. The entire body
     # is delivered to the method as a XML::LibXML object.
-    sub world : SOAP('DocLiteral') {
+    sub world : SOAP('DocumentLiteral') {
         my ($self, $c, $doc) = @_;
     }
 
@@ -175,7 +175,7 @@ The implementation of SOAP Action classes helps delivering specific
 SOAP scenarios, like HTTP GET, RPC Encoded, RPC Literal or Document
 Literal, or even Document RDF or just about any required combination.
 
-See L<Catalyst::Action::SOAP::DocLiteral> for an example.
+See L<Catalyst::Action::SOAP::DocumentLiteral> for an example.
 
 =head1 ACCESSORS
 
@@ -239,7 +239,7 @@ from the message and dispatching the correct method.
 =head1 SEE ALSO
 
 L<Catalyst::Action::SOAP>, L<XML::LibXML>,
-L<Catalyst::Action::SOAP::DocLiteral>,
+L<Catalyst::Action::SOAP::DocumentLiteral>,
 L<Catalyst::Action::SOAP::RPCEncoded>,
 L<Catalyst::Action::SOAP::HTTPGet>
 

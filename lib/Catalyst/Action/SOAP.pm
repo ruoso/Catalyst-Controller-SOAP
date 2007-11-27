@@ -42,7 +42,7 @@ __END__
 
 =head1 NAME
 
-Catalyst::Controller::SOAP::Action - Action superclass
+Catalyst::Action::SOAP - Action superclass
 
 =head1 SYNOPSIS
 
