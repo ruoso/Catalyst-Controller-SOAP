@@ -4,3 +4,92 @@ Revision history for Perl extension Catalyst::Controller::SOAP.
 	- original version; created by h2xs 1.23 with options
 		-n Catalyst::Controller::SOAP
 
+commit 865fcd5df2222b9034690fef7f4f6c800c9a75d4
+Author: Daniel Ruoso <daniel@ruoso.com>
+Date:   Wed Nov 21 18:21:23 2007 +0000
+
+    The PostApp app is now used in a test...
+
+commit 16f12fb6cda352faa2e88dacf6e468c3778d3a52
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Sun Nov 18 16:50:54 2007 +0000
+
+    now do not depend on renderview in the test. Also declare the versioned dependency on the Catalyst::Runtime
+
+commit dcdeecc9b1add94f68aa1905957cd9b9ae96c761
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Thu Nov 15 09:59:28 2007 +0000
+
+    marking new release
+
+commit a201321dde6a2575d95b88fbf854caf424ca0ccf
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Thu Nov 15 09:54:21 2007 +0000
+
+    fixing naming of modules in documentation...
+
+commit 7c2b71c1a19a521768c6debf07aaea149549195e
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Wed Nov 14 19:13:24 2007 +0000
+
+    marking new release
+
+commit e9bd4bbe2c3d3e678b7fc1440b5f72766b3307a6
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Wed Nov 14 19:12:53 2007 +0000
+
+    rpc endpoint now working
+
+commit 8baa49622fadce26d5e67ab3e1a215573b544b29
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Wed Nov 14 18:49:51 2007 +0000
+
+    inserting an application inside it as to become more easily testeable
+
+commit cbb6c48df9344176d1b7a7ca913358762758216f
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Wed Nov 14 17:44:53 2007 +0000
+
+    commenting out the post test, as I am not being able to actually test it.
+
+commit 255b3e5ecfd72b6ee80efd13352ec339bb8544b0
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Wed Nov 14 15:19:25 2007 +0000
+
+    trying to make the test POST to work
+
+commit 05f68c21b35b7e935a1cbf69841550ef4a941726
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Wed Nov 14 14:22:14 2007 +0000
+
+    fixing the attribute parsing method. HTTPGet working, POST test failing because the post data is not reaching the destination...
+
+commit ae3039a74cfe706bd3580a36f53a6221fbe7f39d
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Wed Nov 14 12:56:34 2007 +0000
+
+    Implementing a test application
+
+commit 9df23a3e824051f9b53c372c423dd40407af9b23
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Tue Nov 13 18:57:31 2007 +0000
+
+    HTTP Get implementation.
+
+commit fb83167aacbc590632158e8a4469c6d99d635887
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Tue Nov 13 18:04:29 2007 +0000
+
+    Implements minimal response generation
+
+commit 8172902febdd3686d6be6ecbc4daad5a139d383b
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Tue Nov 13 17:10:53 2007 +0000
+
+    XML::DOM doesn't support namespaces, let's move to XML::LibXML instead
+
+commit 4635f7dc730316da5952d3e533e439288508fb21
+Author: Daniel Ruoso <ruoso@pitombeira.(none)>
+Date:   Tue Nov 13 15:17:41 2007 +0000
+
+    initial revision

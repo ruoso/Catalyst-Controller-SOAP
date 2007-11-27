@@ -11,6 +11,4 @@ sub default : Private {
     $c->response->body( 'default response' );
 }
 
-sub end : ActionClass('RenderView') {}
-
 1;

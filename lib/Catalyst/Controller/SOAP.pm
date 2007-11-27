@@ -5,7 +5,7 @@
     use XML::LibXML;
 
     use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
-    our $VERSION = '0.0.4';
+    our $VERSION = '0.0.6';
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
