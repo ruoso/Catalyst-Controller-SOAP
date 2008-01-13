@@ -1,6 +1,7 @@
 { package Catalyst::Action::SOAP::RPCEndpoint;
 
   use base qw/Catalyst::Action::SOAP/;
+  use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
 
   sub execute {
       my $self = shift;
@@ -10,7 +11,7 @@
       $self->prepare_soap_xml_post($c);
       unless ($c->stash->{soap}->fault) {
           my $envelope = $c->stash->{soap}->parsed_envelope;
-          my ($body) = $envelope->getElementsByTagName('Body',0);
+          my ($body) = $envelope->getElementsByTagNameNS(NS_SOAP_ENV,'Body',0);
           my @children = $body->getChildNodes();
           if (scalar @children != 1) {
               $c->stash->{soap}->fault

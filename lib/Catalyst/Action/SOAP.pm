@@ -19,7 +19,8 @@
 
   sub prepare_soap_xml_post {
       my ($self, $c) = @_;
-      if ($c->req->content_type =~ /application\/soap\+xml/ &&
+      # This should be applocation/soap+xml, but some clients doesn't seem to respect that.
+      if ($c->req->content_type =~ /xml/ &&
           $c->req->method eq 'POST') {
           my $body = $c->req->body;
           my $xml_str = join '', <$body>;
