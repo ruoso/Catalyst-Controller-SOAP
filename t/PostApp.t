@@ -8,20 +8,20 @@ my $response;
 
 $response = soap_xml_post
   ('/ws/hello',
-   '<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope"><Body>World</Body></Envelope>'
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>World</Body></Envelope>'
   );
 
 ok($response->content =~ /Hello World/, 'Document Literal correct response: '.$response->content);
 
 $response = soap_xml_post
   ('/ws2',
-   '<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope"><Body><hello>World</hello></Body></Envelope>'
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><hello>World</hello></Body></Envelope>'
   );
 ok($response->content =~ /Hello World/, 'RPC Literal Correct response: '.$response->content);
 
 $response = soap_xml_post
   ('/ws/foo',
-   '<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope"><Body>World</Body></Envelope>'
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>World</Body></Envelope>'
   );
 ok($response->content =~ /\<foo\>\<bar\>\<baz\>Hello World\!\<\/baz\>\<\/bar\>\<\/foo\>/, 'Literal response: '.$response->content);
 

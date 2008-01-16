@@ -4,8 +4,9 @@
     use base qw/Catalyst::Controller/;
     use XML::LibXML;
 
-    use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
-    our $VERSION = '0.1.2';
+    use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
+
+    our $VERSION = '0.2.0';
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
@@ -24,48 +25,49 @@
 
         return $self->NEXT::end($c, @_) unless $soap;
 
+        my $namespace = $soap->namespace || NS_SOAP_ENV;
         my $response = XML::LibXML->createDocument();
 
         my $envelope = $response->createElementNS
-          (NS_SOAP_ENV,"Envelope");
+          ($namespace,"Envelope");
 
         $response->setDocumentElement($envelope);
 
         # TODO: we don't support header generation in response yet.
 
         my $body = $response->createElementNS
-          (NS_SOAP_ENV,"Body");
+          ($namespace,"Body");
 
         $envelope->appendChild($body);
 
         if ($soap->fault) {
             my $fault = $response->createElementNS
-              (NS_SOAP_ENV, "Fault");
+              ($namespace, "Fault");
             $body->appendChild($fault);
 
             my $code = $response->createElementNS
-              (NS_SOAP_ENV, "Code");
+              ($namespace, "Code");
             $fault->appendChild($code);
 
-            $self->_generate_Fault_Code($response,$code,$soap->fault->{code});
+            $self->_generate_Fault_Code($response,$code,$soap->fault->{code}, $namespace);
 
             if ($soap->fault->{reason}) {
                 my $reason = $response->createElementNS
-                  (NS_SOAP_ENV, "Reason");
+                  ($namespace, "Reason");
                 $fault->appendChild($reason);
                 # TODO: we don't support the xml:lang attribute yet.
                 my $text = $response->createElementNS
-                  (NS_SOAP_ENV, "Text");
+                  ($namespace, "Text");
                 $reason->appendChild($text);
                 $text->appendText($soap->fault->{reason});
             }
             if ($soap->fault->{detail}) {
                 my $detail = $response->createElementNS
-                  (NS_SOAP_ENV, "Detail");
+                  ($namespace, "Detail");
                 $fault->appendChild($detail);
                 # TODO: we don't support the xml:lang attribute yet.
                 my $text = $response->createElementNS
-                  (NS_SOAP_ENV, "Text");
+                  ($namespace, "Text");
                 $detail->appendChild($text);
                 $text->appendText($soap->fault->{detail});
             }
@@ -86,21 +88,22 @@
             }
         }
 
+        $c->res->content_type('text/xml');
         $c->res->body($envelope->toString());
     }
 
     sub _generate_Fault_Code {
-        my ($self, $document, $codenode, $codeValue) = @_;
+        my ($self, $document, $codenode, $codeValue, $namespace) = @_;
 
         my $value = $document->createElementNS
-          (NS_SOAP_ENV, "Value");
+          ($namespace, "Value");
         if (ref $codeValue eq 'ARRAY') {
             $value->appendText($codeValue->[0]);
             my $subcode = $document->createElementNS
-              (NS_SOAP_ENV, 'SubCode');
+              ($namespace, 'SubCode');
             $codenode->appendChild($value);
             $codenode->appendChild($subcode);
-            $self->_generate_Fault_Code($document, $subcode, $codeValue->[1]);
+            $self->_generate_Fault_Code($document, $subcode, $codeValue->[1], $namespace);
         } else {
             $value->appendText($codeValue);
             $codenode->appendChild($value);
@@ -114,7 +117,7 @@
 
     use base qw(Class::Accessor::Fast);
 
-    __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments fault
+    __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments fault namespace 
                                encoded_return literal_return string_return});
 
 

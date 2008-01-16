@@ -1,7 +1,7 @@
 { package Catalyst::Action::SOAP::DocumentLiteral;
 
   use base qw/Catalyst::Action::SOAP/;
-  use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
+  use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
 
   sub execute {
       my $self = shift;
@@ -10,7 +10,8 @@
       $self->prepare_soap_xml_post($c);
       unless ($c->stash->{soap}->fault) {
           my $envelope = $c->stash->{soap}->parsed_envelope;
-          my ($body) = $envelope->getElementsByTagNameNS(NS_SOAP_ENV, 'Body');
+          my $namespace = $c->stash->{soap}->namespace || NS_SOAP_ENV;
+          my ($body) = $envelope->getElementsByTagNameNS($namespace, 'Body');
           $self->NEXT::execute($controller, $c, $body);
       }
   }

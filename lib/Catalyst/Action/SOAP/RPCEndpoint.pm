@@ -1,7 +1,7 @@
 { package Catalyst::Action::SOAP::RPCEndpoint;
 
   use base qw/Catalyst::Action::SOAP/;
-  use constant NS_SOAP_ENV => "http://www.w3.org/2003/05/soap-envelope";
+  use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
 
   sub execute {
       my $self = shift;
@@ -11,7 +11,8 @@
       $self->prepare_soap_xml_post($c);
       unless ($c->stash->{soap}->fault) {
           my $envelope = $c->stash->{soap}->parsed_envelope;
-          my ($body) = $envelope->getElementsByTagNameNS(NS_SOAP_ENV,'Body',0);
+          my $namespace = $c->stash->{soap}->namespace || NS_SOAP_ENV;
+          my ($body) = $envelope->getElementsByTagNameNS($namespace,'Body',0);
           my @children = $body->getChildNodes();
           if (scalar @children != 1) {
               $c->stash->{soap}->fault
@@ -19,7 +20,10 @@
                    reason => 'Bad Body', detail =>
                    'RPC messages should contain only one element inside body'})
             } else {
-                my $operation = $children[0]->nodeName();
+                my ($smthing, $operation) = split /:/, $children[0]->nodeName();
+                $operation ||= $smthing; # if there's no ns prefix,
+                                         # operation is the first
+                                         # part.
                 my $arguments = $children[0]->getChildNodes();
                 $c->stash->{soap}->arguments($arguments);
                 if (!grep { /RPC(Encoded|Literal)/ } @{$controller->action_for($operation)->attributes->{ActionClass}}) {
