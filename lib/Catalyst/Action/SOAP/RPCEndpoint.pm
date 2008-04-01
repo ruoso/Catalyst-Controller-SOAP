@@ -7,8 +7,8 @@
       my $self = shift;
       my ( $controller, $c ) = @_;
 
-      $self->prepare_soap_helper($c);
-      $self->prepare_soap_xml_post($c);
+      $self->prepare_soap_helper($controller,$c);
+      $self->prepare_soap_xml_post($controller,$c);
       unless ($c->stash->{soap}->fault) {
           my $envelope = $c->stash->{soap}->parsed_envelope;
           my $namespace = $c->stash->{soap}->namespace || NS_SOAP_ENV;
@@ -24,8 +24,14 @@
                 $operation ||= $smthing; # if there's no ns prefix,
                                          # operation is the first
                                          # part.
-                my $arguments = $children[0]->getChildNodes();
-                $c->stash->{soap}->arguments($arguments);
+                $c->stash->{soap}->operation_name($operation);
+                if ($controller->wsdlobj) {
+                    $c->stash->{soap}->arguments
+                      ($controller->decoders->{$operation}->($children[0]));
+                } else {
+                    my $arguments = $children[0]->getChildNodes();
+                    $c->stash->{soap}->arguments($arguments);
+                }
                 if (!grep { /RPC(Encoded|Literal)/ } @{$controller->action_for($operation)->attributes->{ActionClass}}) {
                     $c->stash->{soap}->fault
                       ({ code => { 'env:Sender' => 'env:Body' },

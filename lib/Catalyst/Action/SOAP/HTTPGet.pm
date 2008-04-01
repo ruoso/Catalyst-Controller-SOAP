@@ -5,7 +5,7 @@
     sub execute {
         my $self = shift;
         my ( $controller, $c ) = @_;
-        $self->prepare_soap_helper($c);
+        $self->prepare_soap_helper($controller,$c);
         $self->NEXT::execute(@_);
     }
 };

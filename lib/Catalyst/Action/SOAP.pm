@@ -13,13 +13,13 @@
   }
 
   sub prepare_soap_helper {
-      my ($self, $c) = @_;
+      my ($self, $controller, $c) = @_;
       $c->stash->{soap} = Catalyst::Controller::SOAP::Helper->new();
   }
 
   sub prepare_soap_xml_post {
-      my ($self, $c) = @_;
-      # This should be applocation/soap+xml, but some clients doesn't seem to respect that.
+      my ($self, $controller, $c) = @_;
+      # This should be application/soap+xml, but some clients doesn't seem to respect that.
       if ($c->req->content_type =~ /xml/ &&
           $c->req->method eq 'POST') {
           my $body = $c->req->body;

@@ -3,13 +3,62 @@
     use strict;
     use base qw/Catalyst::Controller/;
     use XML::LibXML;
+    use XML::Compile::WSDL11;
+    use UNIVERSAL qw(isa);
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
 
-    our $VERSION = '0.2.0';
+    our $VERSION = '0.3';
+
+    __PACKAGE__->mk_accessors qw(wsdlobj decoders encoders);
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
+
+        my $wsdlfile = $self->config->{wsdl};
+        if ($wsdlfile) {
+            $self->wsdlobj(XML::Compile::WSDL11->new($wsdlfile))
+              unless $self->wsdlobj;
+
+            my $operation = $self->wsdlobj->operation($name)
+              or die 'Every operation should be on the WSDL when using one.';
+            my $portop = $operation->portOperation();
+
+            my $input_parts = $self->wsdlobj->find(message => $portop->{input}{message})
+              ->{part};
+            $_->{compiled} = $self->wsdlobj->schemas->compile(READER => $_->{element})
+              for @{$input_parts};
+
+            $self->decoders({}) unless $self->decoders();
+            $self->decoders->{$name} = sub {
+                my $body = shift;
+                my @nodes = grep { UNIVERSAL::isa($_, 'XML::LibXML::Element') } $body->childNodes();
+                return
+                  {
+                   map {
+                       my $data = $_->{compiled}->(shift @nodes);
+                       $_->{name} => $data;
+                   } @{$input_parts}
+                  }, @nodes;
+            };
+
+            my $output_parts = $self->wsdlobj->find(message => $portop->{output}{message})
+              ->{part};
+            $_->{compiled} = $self->wsdlobj->schemas->compile(WRITER => $_->{element})
+              for @{$output_parts};
+
+            $self->encoders({}) unless $self->encoders();
+            $self->encoders->{$name} = sub {
+                my ($doc, $data) = @_;
+                return
+                  [
+                   map {
+                       $_->{compiled}->($doc, $data->{$_->{name}})
+                   } @{$output_parts}
+                  ];
+            };
+        }
+
         my $actionclass = ($value =~ /^\+/ ? $value :
           'Catalyst::Action::SOAP::'.$value);
         (
@@ -85,6 +134,12 @@
                 } else {
                     $body->appendChild($lit);
                 }
+            } elsif (my $cmp = $soap->compile_return) {
+                die 'Tried to use compile_return without WSDL'
+                  unless $self->wsdlobj;
+
+                my $arr = $self->encoders->{$soap->operation_name}->($response, $cmp);
+                $body->appendChild($_) for @{$arr};
             }
         }
 
@@ -117,8 +172,9 @@
 
     use base qw(Class::Accessor::Fast);
 
-    __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments fault namespace 
-                               encoded_return literal_return string_return});
+    __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments fault namespace
+                                 encoded_return literal_return string_return
+                                 compile_return operation_name});
 
 
 };
@@ -241,12 +297,28 @@ message.
 
 =back
 
+=head1 USING WSDL
+
+If you define "wsdl" as a configuration key,
+Catalyst::Controller::SOAP will automatically map your operations into
+the WSDL operations, in which case you will receive the parsed Perl
+structure as returned by XML::Compile according to the type defined in
+the WSDL message.
+
+Also, when using wsdl, you can also define the response using
+
+=over
+
+=item $c->stash->{soap}->compile_return($perl_structure)
+
+In this case, the given structure will be transformed by XML::Compile,
+according to what's described in the WSDL file.
+
+=back
+
 =head1 TODO
 
-At this moment, almost everything is still to be done. The only thing
-done right now is getting the body from the message and dispatching
-the correct method. It is strongly recommended to use XML::Compile as
-a tool to deal with the XML nodes.
+No header features are implemented yet.
 
 The SOAP Encoding support is also missing, when that is ready you'll
 be able to do something like the code below:
@@ -262,7 +334,8 @@ be able to do something like the code below:
 L<Catalyst::Action::SOAP>, L<XML::LibXML>, L<XML::Compile>
 L<Catalyst::Action::SOAP::DocumentLiteral>,
 L<Catalyst::Action::SOAP::RPCLiteral>,
-L<Catalyst::Action::SOAP::HTTPGet>
+L<Catalyst::Action::SOAP::HTTPGet>, L<XML::Compile::WSDL11>,
+L<XML::Compile::Schema>
 
 =head1 AUTHORS
 

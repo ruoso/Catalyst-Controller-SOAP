@@ -1,4 +1,4 @@
-use Test::More tests => 3;
+use Test::More tests => 4;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -24,6 +24,12 @@ $response = soap_xml_post
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>World</Body></Envelope>'
   );
 ok($response->content =~ /\<foo\>\<bar\>\<baz\>Hello World\!\<\/baz\>\<\/bar\>\<\/foo\>/, 'Literal response: '.$response->content);
+
+$response = soap_xml_post
+  ('/withwsdl/Greet',
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><who>World</who><greeting>Hello</greeting></GreetingSpecifier></Body></Envelope>'
+  );
+ok($response->content =~ /greeting\>Hello World\!\<\//, 'Literal response: '.$response->content);
 
 sub soap_xml_post {
     my $path = shift;

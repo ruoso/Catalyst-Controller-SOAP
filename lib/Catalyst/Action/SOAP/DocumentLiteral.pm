@@ -6,12 +6,18 @@
   sub execute {
       my $self = shift;
       my ( $controller, $c ) = @_;
-      $self->prepare_soap_helper($c);
-      $self->prepare_soap_xml_post($c);
+      $self->prepare_soap_helper($controller,$c);
+      $self->prepare_soap_xml_post($controller,$c);
       unless ($c->stash->{soap}->fault) {
           my $envelope = $c->stash->{soap}->parsed_envelope;
           my $namespace = $c->stash->{soap}->namespace || NS_SOAP_ENV;
           my ($body) = $envelope->getElementsByTagNameNS($namespace, 'Body');
+          my $operation = $self->name;
+          $c->stash->{soap}->operation_name($operation);
+          if ($controller->wsdlobj) {
+              $body = $c->stash->{soap}->arguments
+                ($controller->decoders->{$operation}->($body));
+          }
           $self->NEXT::execute($controller, $c, $body);
       }
   }
