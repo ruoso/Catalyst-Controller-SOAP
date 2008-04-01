@@ -5,7 +5,8 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Catalyst::Controller::SOAP',
     VERSION_FROM      => 'lib/Catalyst/Controller/SOAP.pm', # finds $VERSION
-    PREREQ_PM         => { Catalyst::Runtime => 5.7011, XML::LibXML => 0}, # e.g., Module::Name => 1.1
+    PREREQ_PM         => { Catalyst::Runtime => 5.7011, XML::LibXML => 0,
+                           XML::Compile::SOAP => 0},
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Catalyst/Controller/SOAP.pm', # retrieve abstract from module
        AUTHOR         => 'Daniel Ruoso <daniel.ruoso@verticalone.pt>') : ()),
