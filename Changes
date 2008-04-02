@@ -1,3 +1,20 @@
+------------------------------------------------------------------------
+r7549 | ruoso | 2008-04-02 16:10:18 +0100 (Qua, 02 Abr 2008) | 1 line
+
+[C-C-SOAP] Tests for Document/Literal-Wrapped working. Supports several wsdls and schemas in the config.
+------------------------------------------------------------------------
+r7548 | ruoso | 2008-04-02 15:54:42 +0100 (Qua, 02 Abr 2008) | 1 line
+
+[C-C-SOAP] Document/Literal-Wrapped support (with a big ONLY FOR COMPATIBILTY REASONS disclaimer)... Test is still failing as the SOAPAction header seems to be lost in the test...
+------------------------------------------------------------------------
+r7546 | ruoso | 2008-04-02 12:23:38 +0100 (Qua, 02 Abr 2008) | 1 line
+
+[C-C-SOAP] Better support for RPC messages, tests including an example of a RPC-Literal service, exception catching generating a SOAP Fault.
+------------------------------------------------------------------------
+r7542 | ruoso | 2008-04-01 18:05:00 +0100 (Ter, 01 Abr 2008) | 1 line
+
+[C-C-S] Now supports WSDL encoding/decoding of messages.
+------------------------------------------------------------------------
 commit 8bea90e61c8aa0cf269da57b9ccbe33987ca76c8
 Author: Daniel Ruoso <daniel@ruoso.com>
 Date:   Mon Nov 26 11:14:25 2007 +0000
