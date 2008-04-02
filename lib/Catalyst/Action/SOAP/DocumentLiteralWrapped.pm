@@ -23,7 +23,7 @@
 
       die 'SOAP Action does not map to any operation' unless $action;
 
-      $c->dispatch($action);
+      $c->forward($operation);
   }
 };
 

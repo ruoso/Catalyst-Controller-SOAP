@@ -8,7 +8,7 @@
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
 
-    our $VERSION = '0.4';
+    our $VERSION = '0.5';
 
     __PACKAGE__->mk_accessors qw(wsdlobj decoders encoders);
 
@@ -17,8 +17,27 @@
 
         my $wsdlfile = $self->config->{wsdl};
         if ($wsdlfile) {
-            $self->wsdlobj(XML::Compile::WSDL11->new($wsdlfile))
-              unless $self->wsdlobj;
+            if (!$self->wsdlobj) {
+                my $schema;
+                if (ref $wsdlfile eq 'HASH') {
+                    $schema = $wsdlfile->{schema};
+                    $wsdlfile = $wsdlfile->{wsdl};
+                }
+
+                if (ref $wsdlfile eq 'ARRAY') {
+                    my $main = shift @{$wsdlfile};
+                    $self->wsdlobj(XML::Compile::WSDL11->new($main));
+                    $self->wsdlobj->addWsdl($_) for @{$wsdlfile};
+                } else {
+                    $self->wsdlobj(XML::Compile::WSDL11->new($wsdlfile));
+                }
+
+                if (ref $schema eq 'ARRAY') {
+                    $self->wsdlobj->importDefinitions($_) for @{$schema};
+                } elsif ($schema) {
+                    $self->wsdlobj->importDefinitions($schema)
+                }
+            }
 
             my $operation = $self->wsdlobj->operation($name)
               or die 'Every operation should be on the WSDL when using one.';
@@ -312,6 +331,14 @@ Catalyst::Controller::SOAP will automatically map your operations into
 the WSDL operations, in which case you will receive the parsed Perl
 structure as returned by XML::Compile according to the type defined in
 the WSDL message.
+
+You can define additional wsdl files or even additional schema
+files. If $wsdl is an arrayref, the first element is the one passed to
+new, and the others will be the argument to subsequent addWsdl calls.
+If $wsdl is a hashref, the "wsdl" key will be handled like above and
+the "schema" key will be used to importDefinitions. If the content of
+the schema key is an arrayref, it will result in several calls to
+importDefinition.
 
 Also, when using wsdl, you can also define the response using
 

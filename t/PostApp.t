@@ -92,7 +92,7 @@ sub soap_xml_post {
     $ENV{REQUEST_METHOD} ='POST';
     $ENV{SERVER_PORT} ='80';
     $ENV{SERVER_NAME} ='pitombeira';
-    $ENV{SOAPAction} = 'http://example.com/actions/Greet';    
+    $ENV{HTTP_SOAPAction} = 'http://example.com/actions/Greet';    
 
     my ($writer, $reader, $error) = map { gensym() } 1..3;
     my $pid = open3($writer, $reader, $error,
