@@ -23,8 +23,10 @@ t/PostApp/lib/PostApp.pm
 t/PostApp/postapp.yml
 lib/Catalyst/Action/SOAP.pm
 lib/Catalyst/Action/SOAP/DocumentLiteral.pm
+lib/Catalyst/Action/SOAP/DocumentLiteralWrapped.pm
 lib/Catalyst/Action/SOAP/HTTPGet.pm
 lib/Catalyst/Action/SOAP/RPCEndpoint.pm
 lib/Catalyst/Action/SOAP/RPCLiteral.pm
 lib/Catalyst/Controller/SOAP.pm
 lib/Catalyst/Controller/SOAP/RPC.pm
+lib/Catalyst/Controller/SOAP/DocumentLiteralWrapped.pm

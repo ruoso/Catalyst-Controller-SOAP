@@ -1,4 +1,4 @@
-use Test::More tests => 8;
+use Test::More tests => 9;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -32,6 +32,12 @@ $response = soap_xml_post
 ok($response->content =~ /greeting\>Hello World\!\<\//, 'Literal response: '.$response->content);
 
 $response = soap_xml_post
+  ('/withwsdl/doclw',
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><who>World</who><greeting>Hello</greeting></GreetingSpecifier></Body></Envelope>'
+  );
+ok($response->content =~ /greeting\>Hello World\!\<\//, ' Document/Literal Wrapped response: '.$response->content);
+
+$response = soap_xml_post
   ('/withwsdl2/Greet','
     <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
          <Body>
@@ -48,14 +54,15 @@ $response = soap_xml_post
   ('/withwsdl2/Greet','
     <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
          <Body>
-               <GreetingSpecifier>
-                   <who><Big>W</Big><Small>orld</Small></who>
-                   <greeting>Hello</greeting>
-               </GreetingSpecifier>
+            <Greet>
+               <who>World</who>
+               <greeting>Hello</greeting>
+            </Greet>
          </Body>
     </Envelope>
   ');
-ok($response->content =~ /Fault/, 'Fault on malformed body for RPC-Literal: '.$response->content);
+ok($response->content =~ /greeting[^>]+\>Hello World\!\<\//, 'Literal response: '.$response->content);
+
 
 $response = soap_xml_post
   ('/withwsdl/Greet',
@@ -85,6 +92,7 @@ sub soap_xml_post {
     $ENV{REQUEST_METHOD} ='POST';
     $ENV{SERVER_PORT} ='80';
     $ENV{SERVER_NAME} ='pitombeira';
+    $ENV{SOAPAction} = 'http://example.com/actions/Greet';    
 
     my ($writer, $reader, $error) = map { gensym() } 1..3;
     my $pid = open3($writer, $reader, $error,
