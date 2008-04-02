@@ -5,6 +5,7 @@ META.yml
 README
 t/Catalyst-Controller-SOAP.t
 t/hello.wsdl
+t/hello2.wsdl
 t/PostApp.t
 t/lib/TestApp/Controller/WS.pm
 t/lib/TestApp/Controller/Root.pm
@@ -14,6 +15,7 @@ t/PostApp/script/postapp_test.pl
 t/PostApp/script/post.pl
 t/PostApp/script/postapp_server.pl
 t/PostApp/lib/PostApp/Controller/WithWSDL.pm
+t/PostApp/lib/PostApp/Controller/WithWSDL2.pm
 t/PostApp/lib/PostApp/Controller/WS.pm
 t/PostApp/lib/PostApp/Controller/Root.pm
 t/PostApp/lib/PostApp/Controller/WS2.pm

@@ -8,7 +8,7 @@
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
 
-    our $VERSION = '0.3';
+    our $VERSION = '0.4';
 
     __PACKAGE__->mk_accessors qw(wsdlobj decoders encoders);
 
@@ -73,6 +73,14 @@
         my $soap = $c->stash->{soap};
 
         return $self->NEXT::end($c, @_) unless $soap;
+
+        if (scalar @{$c->error}) {
+            $c->stash->{soap}->fault
+              ({ code => [ 'env:Sender' ],
+                 reason => 'Unexpected Error', detail =>
+                 'Unexpected error in the application: '.(join "\n", @{$c->error} ).'!'});
+            $c->error(0);
+        }
 
         my $namespace = $soap->namespace || NS_SOAP_ENV;
         my $response = XML::LibXML->createDocument();
@@ -160,7 +168,7 @@
             $codenode->appendChild($subcode);
             $self->_generate_Fault_Code($document, $subcode, $codeValue->[1], $namespace);
         } else {
-            $value->appendText($codeValue);
+            $value->appendText($codeValue) if $codeValue;
             $codenode->appendChild($value);
         }
     }

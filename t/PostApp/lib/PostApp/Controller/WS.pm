@@ -25,4 +25,8 @@ sub foo : Local SOAP('DocumentLiteral') {
     $c->stash->{soap}->literal_return($foo);
 }
 
+sub bar : Local SOAP('DocumentLiteral') {
+    die 'exception leaked by an action';
+}
+
 1;

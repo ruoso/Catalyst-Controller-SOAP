@@ -1,7 +1,9 @@
 { package Catalyst::Action::SOAP::RPCEndpoint;
 
+  use strict;
   use base qw/Catalyst::Action::SOAP/;
   use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
+  use UNIVERSAL;
 
   sub execute {
       my $self = shift;
@@ -13,34 +15,50 @@
           my $envelope = $c->stash->{soap}->parsed_envelope;
           my $namespace = $c->stash->{soap}->namespace || NS_SOAP_ENV;
           my ($body) = $envelope->getElementsByTagNameNS($namespace,'Body',0);
-          my @children = $body->getChildNodes();
+          my @children = grep { UNIVERSAL::isa( $_, 'XML::LibXML::Element') } $body->getChildNodes();
           if (scalar @children != 1) {
               $c->stash->{soap}->fault
-                ({ code => { 'env:Sender' => 'env:Body' },
+                ({ code => [ 'env:Sender' => 'env:Body' ],
                    reason => 'Bad Body', detail =>
                    'RPC messages should contain only one element inside body'})
             } else {
-                my ($smthing, $operation) = split /:/, $children[0]->nodeName();
+                my $rpc_element = $children[0];
+                my ($smthing, $operation) = split /:/, $rpc_element->nodeName();
                 $operation ||= $smthing; # if there's no ns prefix,
                                          # operation is the first
                                          # part.
                 $c->stash->{soap}->operation_name($operation);
-                if ($controller->wsdlobj) {
-                    $c->stash->{soap}->arguments
-                      ($controller->decoders->{$operation}->($children[0]));
-                } else {
-                    my $arguments = $children[0]->getChildNodes();
-                    $c->stash->{soap}->arguments($arguments);
-                }
-                if (!grep { /RPC(Encoded|Literal)/ } @{$controller->action_for($operation)->attributes->{ActionClass}}) {
+
+                eval {
+                    if ($controller->wsdlobj) {
+                        my $decoder = $controller->decoders->{$operation};
+                        my ($args) = $decoder->($rpc_element);
+                        $c->stash->{soap}->arguments($args);
+                    } else {
+                        my $arguments = $rpc_element->getChildNodes();
+                        $c->stash->{soap}->arguments($arguments);
+                    }
+                };
+                if ($@) {
                     $c->stash->{soap}->fault
-                      ({ code => { 'env:Sender' => 'env:Body' },
-                         reason => 'Bad Operation', detail =>
-                         'Invalid Operation'})
+                      ({ code => [ 'env:Sender' => 'env:Body' ],
+                         reason => 'Bad Body', detail =>
+                         'Malformed parts on the message body'});
                 } else {
-                    # this is our RPC action
-                    $c->forward($operation);
+                    my $action = $controller->action_for($operation);
+
+                    if (!$action ||
+                        !grep { /RPC(Encoded|Literal)/ } @{$action->attributes->{ActionClass}}) {
+                        $c->stash->{soap}->fault
+                          ({ code => [ 'env:Sender' => 'env:Body' ],
+                             reason => 'Bad Operation', detail =>
+                             'Invalid Operation'});
+                    } else {
+                        # this is our RPC action
+                        $c->forward($operation);
+                    }
                 }
+
             }
       }
   }

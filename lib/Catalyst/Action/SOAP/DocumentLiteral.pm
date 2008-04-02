@@ -14,11 +14,20 @@
           my ($body) = $envelope->getElementsByTagNameNS($namespace, 'Body');
           my $operation = $self->name;
           $c->stash->{soap}->operation_name($operation);
-          if ($controller->wsdlobj) {
-              $body = $c->stash->{soap}->arguments
-                ($controller->decoders->{$operation}->($body));
+          eval {
+              if ($controller->wsdlobj) {
+                  $body = $c->stash->{soap}->arguments
+                    ($controller->decoders->{$operation}->($body));
+              }
+          };
+          if ($@) {
+              $c->stash->{soap}->fault
+                ({ code => [ 'env:Sender' => 'env:Body' ],
+                   reason => 'Bad Body', detail =>
+                   'Schema validation on the body failed.'});
+          } else {
+              $self->NEXT::execute($controller, $c, $body);
           }
-          $self->NEXT::execute($controller, $c, $body);
       }
   }
 };
