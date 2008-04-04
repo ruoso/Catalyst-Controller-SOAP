@@ -127,9 +127,9 @@
             my $namespace = $self->action_namespace($c);
             my $action = $self->create_action
               (
-               name => 'base_rpc_endpoint',
+               name => '___base_rpc_endpoint',
                code => sub { },
-               reverse => ($namespace ? $namespace.'/' : '') . 'base_rpc_endpoint',
+               reverse => ($namespace ? $namespace.'/' : '') . '___base_rpc_endpoint',
                namespace => $namespace,
                class => (ref $self || $self),
                attributes => { ActionClass => [ 'Catalyst::Action::SOAP::RPCEndpoint' ],
@@ -337,6 +337,15 @@ Catalyst::Controller::SOAP - Catalyst SOAP Controller
     package MyApp::Controller::Example;
     use base 'Catalyst::Controller::SOAP';
 
+    # When using a WSDL, you can just specify the Port name, and it
+    # will infer the style and use. To do that, you just need to use
+    # the WSDLPort attribute. This might be required if your service
+    # has more than one port.  This operation will be made available
+    # using the path part of the location attribute of the port
+    # definition.
+    __PACKAGE__->config->{wsdl} = 'file.wsdl';
+    sub servicefoo : WSDLPort('ServicePort') {}
+
     # available in "/example" as operation "ping". The arguments are
     # treated as a literal document and passed to the method as a
     # XML::LibXML object
@@ -364,16 +373,6 @@ Catalyst::Controller::SOAP - Catalyst SOAP Controller
     # dispatched. This code won't be executed at all.
     # See Catalyst::Controller::SOAP::RPC.
     sub index :Local SOAP('RPCEndpoint') {}
-
-    # When using a WSDL, you can just specify the Port name, and it
-    # will infer the style and use. To do that, you just need to use
-    # the WSDLPort attribute instead of the SOAP attribute. This might
-    # be required if your service has more than one port.  When using
-    # this attribute with document-style bindings, this operation will
-    # be made available using the path part of the location attribute
-    # of the port definition. This attribute must be used for RPC
-    # operations too, but you still need to define the RPCEndpoint.
-    sub servicefoo : WSDLPort('ServicePort') {}
 
 
 =head1 ABSTACT
@@ -455,11 +454,10 @@ message.
 
 =head1 USING WSDL
 
-If you define "wsdl" as a configuration key,
-Catalyst::Controller::SOAP will automatically map your operations into
-the WSDL operations, in which case you will receive the parsed Perl
-structure as returned by XML::Compile according to the type defined in
-the WSDL message.
+If you define the "wsdl" configuration key, Catalyst::Controller::SOAP
+will automatically map your operations into the WSDL operations, in
+which case you will receive the parsed Perl structure as returned by
+XML::Compile according to the type defined in the WSDL message.
 
 You can define additional wsdl files or even additional schema
 files. If $wsdl is an arrayref, the first element is the one passed to
@@ -469,33 +467,39 @@ the "schema" key will be used to importDefinitions. If the content of
 the schema key is an arrayref, it will result in several calls to
 importDefinition.
 
-When using WSDL with more than one service or port,
-XML::Compile::WSDL11 needs extra hints. You should:
+When using WSDL, you can use the WSDLPort attribute, that not only
+sets the port name but also infer which is the style of the binding,
+the use of the input body and also declares the Path for the operation
+according to the 'location' attribute in the WSDL file. For RPC
+operations, the endpoint action will be created dinamically also in
+the path defined by the WSDL file.
 
-=over
+This is the most convenient way of defining a SOAP service, which, in
+the end, will require you to have it as simple as:
 
-=item __PACKAGE__->config->{wsdlservice} = 'ServiceName'
+  package SOAPApp::Controller::WithWSDL;
+  use base 'Catalyst::Controller::SOAP';
+  __PACKAGE__->config->{wsdl} = 't/hello4.wsdl';
+  
+  # in this case, the input has two parts, named 'who' and 'greeting'
+  # and the output has a single 'greeting' part.
+  sub Greet : WSDLPort('Greet') {
+    my ( $self, $c, $args ) = @_;
+    my $who = $args->{who};
+    my $grt = $args->{greeting};
+    $c->stash->{soap}->compile_return({ greeting => $grt.' '.$who.'!' });
+  }
 
-This option is required whenever your WSDL have more than one service.
+When using WSDL with more than one port, the use of this attribute is
+mandatory.
 
-=item sub foo : WSDLPort('PortName') { }
-
-When the service has more than one port, you must set the port
-name. For your convenince, the WSDLPort attribute not only sets it but
-also infer which is the style of the binding and the use of the input
-body. If this is a Document-style binding, it will also declare the
-Path for this operation based on the location of the port.
-
-RPC bindings must also use this attribute in multi-port WSDLs, but it
-won't declare the path for this operation and you still 
-
-=back
+When the WSDL describes more than one service, the controller can only
+represent one of them, so you must define the 'wsdlservice' config key
+that will be used to select the service.
 
 Also, when using wsdl, you can define the response using:
 
-=over
-
-=item $c->stash->{soap}->compile_return($perl_structure)
+  $c->stash->{soap}->compile_return($perl_structure)
 
 In this case, the given structure will be transformed by XML::Compile,
 according to what's described in the WSDL file.
@@ -505,12 +509,10 @@ hashref with keys 'reader' and 'writer', which both have a hashref
 as their value), those key / value pairs will be passed as options
 to the XML::Compile::Schema::compile() method.
 
-    __PACKAGE__->config->{xml_compile} = {
-        reader => {sloppy_integers => 1},
-        writer => {sloppy_integers => 1},
-    };
+  __PACKAGE__->config->{xml_compile} = {
+      reader => {sloppy_integers =>     writer => {sloppy_integers => 1},
+  };
 
-=back
 
 =head1 TODO
 
@@ -536,6 +538,7 @@ L<XML::Compile::Schema>
 =head1 AUTHORS
 
 Daniel Ruoso C<daniel.ruoso@verticalone.pt>
+Drew Taylor C<drew@drewtaylor.com>
 
 =head1 BUG REPORTS
 

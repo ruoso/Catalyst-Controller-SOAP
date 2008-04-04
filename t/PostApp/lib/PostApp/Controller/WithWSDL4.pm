@@ -2,7 +2,7 @@ package PostApp::Controller::WithWSDL4;
 
 use strict;
 use warnings;
-use base 'Catalyst::Controller::SOAP::RPC';
+use base 'Catalyst::Controller::SOAP';
 
 __PACKAGE__->config->{wsdl} = 't/hello4.wsdl';
 
