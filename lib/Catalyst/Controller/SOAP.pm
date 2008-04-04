@@ -110,15 +110,15 @@
               );
         } else {
             use Data::Dumper;
-            $self->{actions}{_base_rpc_endpoint}{Path} ||= [];
-            push @{$self->{actions}{_base_rpc_endpoint}{Path}}, $path
+            $self->{actions}{base_rpc_endpoint}{Path} ||= [];
+            push @{$self->{actions}{base_rpc_endpoint}{Path}}, $path
               unless grep { $_ eq $path }
                 @{$self->{actions}{_base_rpc_endpoint}{Path}};
             return $self->_parse_SOAP_attr($c, $name, $style.$use)
         }
     }
 
-    sub _base_rpc_endpoint :ActionClass('SOAP::RPCEndpoint') { };
+    sub base_rpc_endpoint :ActionClass('SOAP::RPCEndpoint') { };
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
