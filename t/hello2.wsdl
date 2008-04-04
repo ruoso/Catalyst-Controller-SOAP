@@ -12,11 +12,13 @@
     <s:schema elementFormDefault="qualified" targetNamespace="http://example.com/hello">
       <s:element minOccurs="0" maxOccurs="1" name="who" type="s:string"/>
       <s:element minOccurs="0" maxOccurs="1" name="greeting" type="s:string"/>
+	  <s:element minOccurs="0" maxOccurs="1" name="count" type="s:integer"/>
     </s:schema>
   </wsdl:types>
   <wsdl:message name="AskGreeting">
     <wsdl:part name="who" element="hello:who"/>
     <wsdl:part name="greeting" element="hello:greeting"/>
+    <wsdl:part name="count" element="hello:count"/>
   </wsdl:message>
   <wsdl:message name="GiveGreeting">
     <wsdl:part name="greeting" element="hello:greeting"/>

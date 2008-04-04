@@ -11,31 +11,52 @@ $response = soap_xml_post
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>World</Body></Envelope>'
   );
 
-ok($response->content =~ /Hello World/, 'Document Literal correct response: '.$response->content);
+like($response->content, qr/Hello World/, 'Document Literal correct response: '.$response->content);
+# diag("/ws/hello: ".$response->content);
 
 $response = soap_xml_post
   ('/ws2',
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><hello>World</hello></Body></Envelope>'
   );
-ok($response->content =~ /Hello World/, 'RPC Literal Correct response: '.$response->content);
+like($response->content, qr/Hello World/, 'RPC Literal Correct response: '.$response->content);
+# diag("/ws2: ".$response->content);
 
 $response = soap_xml_post
   ('/ws/foo',
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>World</Body></Envelope>'
   );
-ok($response->content =~ /\<foo\>\<bar\>\<baz\>Hello World\!\<\/baz\>\<\/bar\>\<\/foo\>/, 'Literal response: '.$response->content);
+like($response->content, qr/\<foo\>\<bar\>\<baz\>Hello World\!\<\/baz\>\<\/bar\>\<\/foo\>/, 'Literal response: '.$response->content);
+# diag("/wsl/foo: ".$response->content);
 
 $response = soap_xml_post
   ('/withwsdl/Greet',
-   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><who>World</who><greeting>Hello</greeting></GreetingSpecifier></Body></Envelope>'
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+      <Body>
+        <GreetingSpecifier>
+          <who>World</who>
+          <greeting>Hello</greeting>
+          <count>1</count>
+        </GreetingSpecifier>
+      </Body>
+    </Envelope>'
   );
-ok($response->content =~ /greeting\>Hello World\!\<\//, 'Literal response: '.$response->content);
+like($response->content, qr/greeting\>1 Hello World\!\<\//, 'Literal response: '.$response->content);
+# diag("/withwsdl/Greet: ".$response->content);
+
 
 $response = soap_xml_post
   ('/withwsdl/doclw',
-   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><who>World</who><greeting>Hello</greeting></GreetingSpecifier></Body></Envelope>'
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><who>World</who><greeting>Hello</greeting><count>2</count></GreetingSpecifier></Body></Envelope>'
   );
-ok($response->content =~ /greeting\>Hello World\!\<\//, ' Document/Literal Wrapped response: '.$response->content);
+like($response->content, qr/greeting\>2 Hello World\!\<\//, ' Document/Literal Wrapped response: '.$response->content);
+# diag("/withwsdl/doclw: ".$response->content);
+
+$response = soap_xml_post
+  ('/withwsdl2/Greet','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet><who>World</who><greeting>Hello</greeting><count>3</count></Greet></Body></Envelope>
+  ');
+like($response->content, qr/greeting[^>]+\>3 Hello World\!Math::BigInt\<\//, 'RPC Literal response: '.$response->content);
+# diag("/withwsdl2/Greet: ".$response->content);
 
 $response = soap_xml_post
   ('/withwsdl2/Greet','
@@ -44,38 +65,27 @@ $response = soap_xml_post
             <Greet>
                <who>World</who>
                <greeting>Hello</greeting>
+               <count>4</count>
             </Greet>
          </Body>
     </Envelope>
   ');
-ok($response->content =~ /greeting[^>]+\>Hello World\!\<\//, 'Literal response: '.$response->content);
-
-$response = soap_xml_post
-  ('/withwsdl2/Greet','
-    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
-         <Body>
-            <Greet>
-               <who>World</who>
-               <greeting>Hello</greeting>
-            </Greet>
-         </Body>
-    </Envelope>
-  ');
-ok($response->content =~ /greeting[^>]+\>Hello World\!\<\//, 'Literal response: '.$response->content);
-
+ok($response->content =~ /greeting[^>]+\>4 Hello World\!Math::BigInt\<\//, 'RPC Literal response: '.$response->content);
+# diag("/withwsdl2/Greet: ".$response->content);
 
 $response = soap_xml_post
   ('/withwsdl/Greet',
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><name>World</name><greeting>Hello</greeting></GreetingSpecifier></Body></Envelope>'
   );
-ok($response->content =~ /Fault/, 'Fault on malformed body for Document-Literal: '.$response->content);
+like($response->content, qr/Fault/, 'Fault on malformed body for Document-Literal: '.$response->content);
+# diag("/withwsdl/Greet: ".$response->content);
 
 $response = soap_xml_post
   ('/ws/bar',
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>World</Body></Envelope>'
   );
-ok($response->content =~ /Fault/, 'Fault for uncaugh exception: '.$response->content);
-
+like($response->content, qr/Fault/, 'Fault for uncaugh exception: '.$response->content);
+# diag("/ws/bar: ".$response->content);
 
 
 sub soap_xml_post {

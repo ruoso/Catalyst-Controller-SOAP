@@ -16,6 +16,10 @@
         my ($self, $c, $name, $value) = @_;
 
         my $wsdlfile = $self->config->{wsdl};
+        my $compile_opts = $self->config->{xml_compile} || {};
+        $compile_opts->{reader} ||= {};
+        $compile_opts->{writer} ||= {};
+        
         if ($wsdlfile) {
             if (!$self->wsdlobj) {
                 my $schema;
@@ -45,7 +49,7 @@
 
             my $input_parts = $self->wsdlobj->find(message => $portop->{input}{message})
               ->{part};
-            $_->{compiled} = $self->wsdlobj->schemas->compile(READER => $_->{element})
+            $_->{compiled} = $self->wsdlobj->schemas->compile(READER => $_->{element}, %{$compile_opts->{reader}})
               for @{$input_parts};
 
             $self->decoders({}) unless $self->decoders();
@@ -63,7 +67,7 @@
 
             my $output_parts = $self->wsdlobj->find(message => $portop->{output}{message})
               ->{part};
-            $_->{compiled} = $self->wsdlobj->schemas->compile(WRITER => $_->{element})
+            $_->{compiled} = $self->wsdlobj->schemas->compile(WRITER => $_->{element}, %{$compile_opts->{writer}})
               for @{$output_parts};
 
             $self->encoders({}) unless $self->encoders();
@@ -348,6 +352,16 @@ Also, when using wsdl, you can also define the response using
 
 In this case, the given structure will be transformed by XML::Compile,
 according to what's described in the WSDL file.
+
+If you define "xml_compile" as a configuration key (which is a 
+hashref with keys 'reader' and 'writer', which both have a hashref
+as their value), those key / value pairs will be passed as options
+to the XML::Compile::Schema::compile() method.
+
+    __PACKAGE__->config->{xml_compile} = {
+        reader => {sloppy_integers => 1},
+        writer => {sloppy_integers => 1},
+    };
 
 =back
 
