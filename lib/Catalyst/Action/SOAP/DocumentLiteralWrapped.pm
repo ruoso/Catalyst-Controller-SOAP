@@ -8,7 +8,7 @@
 
       $self->prepare_soap_helper(@_);
 
-      my $prefix = $controller->config->{soap_action_prefix};
+      my $prefix = $controller->soap_action_prefix;
       my $soapaction = $c->req->headers->header('SOAPAction');
 
       die 'No SOAP Action' unless $soapaction;

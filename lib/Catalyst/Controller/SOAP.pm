@@ -11,9 +11,13 @@
 
     our $VERSION = '0.7';
 
-    __PACKAGE__->mk_accessors qw(wsdlobj decoders encoders ports);
+    __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
+         ports wsdlservice xml_compile soap_action_prefix);
 
-    # XXX - This is here as a temporary fix for 
+    # XXX - This is here as a temporary fix for a bug in _parse_attrs
+    # that makes it impossible to return more than one
+    # "final_attribute", a patch was already submitted and should make
+    # into the next release.
     sub _parse_attrs {
         my ( $self, $c, $name, @attrs ) = @_;
 
@@ -24,7 +28,7 @@
         my ($attr) = grep { $_ && $_ =~ /^WSDLPort/ } @attrs;
         return $final unless $attr;
 
-        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/ ) ) #* emacs bug
+        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/ ) )
         {
             if ( defined $value ) {
                 ( $value =~ s/^'(.*)'$/$1/ ) || ( $value =~ s/^"(.*)"/$1/ );
@@ -42,7 +46,7 @@
     sub __init_wsdlobj {
         my ($self, $c) = @_;
 
-        my $wsdlfile = $self->config->{wsdl};
+        my $wsdlfile = $self->wsdl;
 
         if ($wsdlfile) {
             if (!$self->wsdlobj) {
@@ -81,7 +85,7 @@
         $self->ports->{$name} = $value;
         my $operation = $self->wsdlobj->operation($name,
                                                   port => $value,
-                                                  service => $self->config->{wsdlservice})
+                                                  service => $self->wsdlservice)
           or die 'Every operation should be on the WSDL when using one.';
 
         # TODO: Use more intelligence when selecting the address.
@@ -99,22 +103,29 @@
         $use = $use =~ /literal/i ? 'Literal' : 'Encoded';
 
         if ($style eq 'Document') {
-           return
-           (
-            Path => $path,
-            $self->_parse_SOAP_attr($c, $name, $style.$use)
-           )
+            return
+              (
+               Path => $path,
+               $self->_parse_SOAP_attr($c, $name, $style.$use)
+              );
         } else {
-           return $self->_parse_SOAP_attr($c, $name, $style.$use)
+            use Data::Dumper;
+            $self->{actions}{_base_rpc_endpoint}{Path} ||= [];
+            push @{$self->{actions}{_base_rpc_endpoint}{Path}}, $path
+              unless grep { $_ eq $path }
+                @{$self->{actions}{_base_rpc_endpoint}{Path}};
+            return $self->_parse_SOAP_attr($c, $name, $style.$use)
         }
     }
+
+    sub _base_rpc_endpoint :ActionClass('SOAP::RPCEndpoint') { };
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
 
-        my $wsdlfile = $self->config->{wsdl};
-        my $wsdlservice = $self->config->{wsdl_service};
-        my $compile_opts = $self->config->{xml_compile} || {};
+        my $wsdlfile = $self->wsdl;
+        my $wsdlservice = $self->wsdlservice;
+        my $compile_opts = $self->xml_compile || {};
         $compile_opts->{reader} ||= {};
         $compile_opts->{writer} ||= {};
 
@@ -292,6 +303,7 @@
 
 
 };
+
 
 1;
 

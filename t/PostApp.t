@@ -1,4 +1,4 @@
-use Test::More tests => 11;
+use Test::More tests => 13;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -114,6 +114,21 @@ $response = soap_xml_post
   );
 like($response->content, qr/greeting\>HELLO WORLD\!\!\<\//, ' using WSDLPort response: '.$response->content);
 # diag("/withwsdl/Shout: ".$response->content);
+
+
+$response = soap_xml_post
+  ('/rpcliteral','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet><who>World</who><greeting>Hello</greeting></Greet></Body></Envelope>
+  ');
+like($response->content, qr/greeting[^>]+\>Hello World\!\<\//, ' WSDLPort RPC Literal response: '.$response->content);
+# diag("/withwsdl2/Greet: ".$response->content);
+
+$response = soap_xml_post
+  ('/rpcliteral','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Shout><who>World</who><greeting>Hello</greeting></Shout></Body></Envelope>
+  ');
+like($response->content, qr/greeting[^>]+\>HELLO WORLD\!\<\//, ' WSDLPort RPC Literal response: '.$response->content);
+# diag("/withwsdl2/Greet: ".$response->content);
 
 
 sub soap_xml_post {
