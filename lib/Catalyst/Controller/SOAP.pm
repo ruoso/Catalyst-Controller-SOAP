@@ -12,7 +12,7 @@
     our $VERSION = '0.7';
 
     __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
-         ports wsdlservice xml_compile soap_action_prefix);
+         ports wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths);
 
     # XXX - This is here as a temporary fix for a bug in _parse_attrs
     # that makes it impossible to return more than one
@@ -23,7 +23,6 @@
 
         my @others = grep { $_ !~ /^WSDLPort/ } @attrs;
         my $final = $self->SUPER::_parse_attrs($c, $name, @others);
-
 
         my ($attr) = grep { $_ && $_ =~ /^WSDLPort/ } @attrs;
         return $final unless $attr;
@@ -109,16 +108,36 @@
                $self->_parse_SOAP_attr($c, $name, $style.$use)
               );
         } else {
-            use Data::Dumper;
-            $self->{actions}{base_rpc_endpoint}{Path} ||= [];
-            push @{$self->{actions}{base_rpc_endpoint}{Path}}, $path
+            $self->rpc_endpoint_paths([]) unless $self->rpc_endpoint_paths;
+            $path =~ s/\/$//;
+            push @{$self->rpc_endpoint_paths}, $path
               unless grep { $_ eq $path }
-                @{$self->{actions}{_base_rpc_endpoint}{Path}};
+                @{$self->rpc_endpoint_paths};
             return $self->_parse_SOAP_attr($c, $name, $style.$use)
         }
     }
 
-    sub base_rpc_endpoint :ActionClass('SOAP::RPCEndpoint') { };
+    # Let's create the rpc_endpoint action.
+    sub register_actions {
+        my $self = shift;
+        my ($c) = @_;
+        $self->SUPER::register_actions(@_);
+
+        if ($self->rpc_endpoint_paths) {
+            my $namespace = $self->action_namespace($c);
+            my $action = $self->create_action
+              (
+               name => 'base_rpc_endpoint',
+               code => sub { },
+               reverse => ($namespace ? $namespace.'/' : '') . 'base_rpc_endpoint',
+               namespace => $namespace,
+               class => (ref $self || $self),
+               attributes => { ActionClass => [ 'Catalyst::Action::SOAP::RPCEndpoint' ],
+                               Path => $self->rpc_endpoint_paths }
+              );
+            $c->dispatcher->register($c, $action);
+        }
+    }
 
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;

@@ -10,14 +10,14 @@ sub Greet : WSDLPort('Greet') {
     my ( $self, $c, $args ) = @_;
     my $who = $args->{who};
     my $grt = $args->{greeting};
-    $c->stash->{soap}->compile_return({ $grt.' '.$who.'!' });
+    $c->stash->{soap}->compile_return({ greeting => $grt.' '.$who.'!' });
 }
 
 sub Shout : WSDLPort('Greet') {
     my ( $self, $c, $args ) = @_;
     my $who = $args->{who};
     my $grt = $args->{greeting};
-    $c->stash->{soap}->compile_return({ uc($grt).' '.uc($who).'!' });
+    $c->stash->{soap}->compile_return({ greeting => uc($grt).' '.uc($who).'!' });
 }
 
 1;
