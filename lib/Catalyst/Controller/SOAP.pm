@@ -8,7 +8,7 @@
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
 
-    our $VERSION = '0.5';
+    our $VERSION = '0.6';
 
     __PACKAGE__->mk_accessors qw(wsdlobj decoders encoders);
 
@@ -19,7 +19,7 @@
         my $compile_opts = $self->config->{xml_compile} || {};
         $compile_opts->{reader} ||= {};
         $compile_opts->{writer} ||= {};
-        
+
         if ($wsdlfile) {
             if (!$self->wsdlobj) {
                 my $schema;
