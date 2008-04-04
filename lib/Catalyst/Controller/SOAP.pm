@@ -7,18 +7,42 @@
     use UNIVERSAL qw(isa);
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
+    use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
 
-    our $VERSION = '0.6';
+    our $VERSION = '0.7';
 
-    __PACKAGE__->mk_accessors qw(wsdlobj decoders encoders);
+    __PACKAGE__->mk_accessors qw(wsdlobj decoders encoders ports);
 
-    sub _parse_SOAP_attr {
-        my ($self, $c, $name, $value) = @_;
+    # XXX - This is here as a temporary fix for 
+    sub _parse_attrs {
+        my ( $self, $c, $name, @attrs ) = @_;
+
+        my @others = grep { $_ !~ /^WSDLPort/ } @attrs;
+        my $final = $self->SUPER::_parse_attrs($c, $name, @others);
+
+
+        my ($attr) = grep { $_ && $_ =~ /^WSDLPort/ } @attrs;
+        return $final unless $attr;
+
+        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/ ) ) #* emacs bug
+        {
+            if ( defined $value ) {
+                ( $value =~ s/^'(.*)'$/$1/ ) || ( $value =~ s/^"(.*)"/$1/ );
+            }
+            my %ret = $self->_parse_WSDLPort_attr($c, $name, $value);
+            push( @{ $final->{$_} }, $ret{$_} ) for
+              keys %ret;
+        }
+
+
+        return $final;
+    }
+
+
+    sub __init_wsdlobj {
+        my ($self, $c) = @_;
 
         my $wsdlfile = $self->config->{wsdl};
-        my $compile_opts = $self->config->{xml_compile} || {};
-        $compile_opts->{reader} ||= {};
-        $compile_opts->{writer} ||= {};
 
         if ($wsdlfile) {
             if (!$self->wsdlobj) {
@@ -42,8 +66,67 @@
                     $self->wsdlobj->importDefinitions($schema)
                 }
             }
+        }
 
-            my $operation = $self->wsdlobj->operation($name)
+        return $self->wsdlobj ? 1 : 0;
+    }
+
+    sub _parse_WSDLPort_attr {
+        my ($self, $c, $name, $value) = @_;
+
+        die 'Cannot use WSDLPort without WSDL.'
+          unless $self->__init_wsdlobj;
+
+        $self->ports({}) unless $self->ports();
+        $self->ports->{$name} = $value;
+        my $operation = $self->wsdlobj->operation($name,
+                                                  port => $value,
+                                                  service => $self->config->{wsdlservice})
+          or die 'Every operation should be on the WSDL when using one.';
+
+        # TODO: Use more intelligence when selecting the address.
+        my ($path) = $operation->endPointAddresses();
+
+        $path =~ s#^[^:]+://[^/]+##;
+
+        # Finding out the style and input body use for this operation
+        my $binding = $self->wsdlobj->find(binding => $operation->port->{binding});
+        my $style = $binding->{'{'.NS_WSDLSOAP.'}binding'}[0]->getAttribute('style');
+        my ($use) = map { $_->{input}{'{'.NS_WSDLSOAP.'}body'}[0]->getAttribute('use') }
+          grep { $_->{name} eq $name } @{ $binding->{operation} || [] };
+
+        $style = $style =~ /document/i ? 'Document' : 'RPC';
+        $use = $use =~ /literal/i ? 'Literal' : 'Encoded';
+
+        if ($style eq 'Document') {
+           return
+           (
+            Path => $path,
+            $self->_parse_SOAP_attr($c, $name, $style.$use)
+           )
+        } else {
+           return $self->_parse_SOAP_attr($c, $name, $style.$use)
+        }
+    }
+
+    sub _parse_SOAP_attr {
+        my ($self, $c, $name, $value) = @_;
+
+        my $wsdlfile = $self->config->{wsdl};
+        my $wsdlservice = $self->config->{wsdl_service};
+        my $compile_opts = $self->config->{xml_compile} || {};
+        $compile_opts->{reader} ||= {};
+        $compile_opts->{writer} ||= {};
+
+        if ($wsdlfile) {
+
+            die 'WSDL initialization failed.'
+              unless $self->__init_wsdlobj;
+
+            $self->ports({}) unless $self->ports();
+            my $operation = $self->wsdlobj->operation($name,
+                                                      port => $self->ports->{$name},
+                                                      service => $wsdlservice)
               or die 'Every operation should be on the WSDL when using one.';
             my $portop = $operation->portOperation();
 
@@ -251,6 +334,17 @@ Catalyst::Controller::SOAP - Catalyst SOAP Controller
     # See Catalyst::Controller::SOAP::RPC.
     sub index :Local SOAP('RPCEndpoint') {}
 
+    # When using a WSDL, you can just specify the Port name, and it
+    # will infer the style and use. To do that, you just need to use
+    # the WSDLPort attribute instead of the SOAP attribute. This might
+    # be required if your service has more than one port.  When using
+    # this attribute with document-style bindings, this operation will
+    # be made available using the path part of the location attribute
+    # of the port definition. This attribute must be used for RPC
+    # operations too, but you still need to define the RPCEndpoint.
+    sub servicefoo : WSDLPort('ServicePort') {}
+
+
 =head1 ABSTACT
 
 Implements SOAP serving support in Catalyst.
@@ -344,7 +438,29 @@ the "schema" key will be used to importDefinitions. If the content of
 the schema key is an arrayref, it will result in several calls to
 importDefinition.
 
-Also, when using wsdl, you can also define the response using
+When using WSDL with more than one service or port,
+XML::Compile::WSDL11 needs extra hints. You should:
+
+=over
+
+=item __PACKAGE__->config->{wsdlservice} = 'ServiceName'
+
+This option is required whenever your WSDL have more than one service.
+
+=item sub foo : WSDLPort('PortName') { }
+
+When the service has more than one port, you must set the port
+name. For your convenince, the WSDLPort attribute not only sets it but
+also infer which is the style of the binding and the use of the input
+body. If this is a Document-style binding, it will also declare the
+Path for this operation based on the location of the port.
+
+RPC bindings must also use this attribute in multi-port WSDLs, but it
+won't declare the path for this operation and you still 
+
+=back
+
+Also, when using wsdl, you can define the response using:
 
 =over
 

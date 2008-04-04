@@ -1,4 +1,4 @@
-use Test::More tests => 9;
+use Test::More tests => 11;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -86,6 +86,34 @@ $response = soap_xml_post
   );
 like($response->content, qr/Fault/, 'Fault for uncaugh exception: '.$response->content);
 # diag("/ws/bar: ".$response->content);
+
+$response = soap_xml_post
+  ('/hello/Greet',
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+      <Body>
+        <GreetingSpecifier>
+          <who>World</who>
+          <greeting>Hello</greeting>
+        </GreetingSpecifier>
+      </Body>
+    </Envelope>'
+  );
+like($response->content, qr/greeting\>Hello World\!\<\//, ' using WSDLPort response: '.$response->content);
+# diag("/withwsdl/Greet: ".$response->content);
+
+$response = soap_xml_post
+  ('/hello/Shout',
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+      <Body>
+        <GreetingSpecifier>
+          <who>World</who>
+          <greeting>Hello</greeting>
+        </GreetingSpecifier>
+      </Body>
+    </Envelope>'
+  );
+like($response->content, qr/greeting\>HELLO WORLD\!\!\<\//, ' using WSDLPort response: '.$response->content);
+# diag("/withwsdl/Shout: ".$response->content);
 
 
 sub soap_xml_post {
