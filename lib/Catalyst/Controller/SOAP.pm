@@ -31,7 +31,7 @@
                 if (ref $wsdlfile eq 'ARRAY') {
                     my $main = shift @{$wsdlfile};
                     $self->wsdlobj(XML::Compile::WSDL11->new($main));
-                    $self->wsdlobj->addWsdl($_) for @{$wsdlfile};
+                    $self->wsdlobj->addWSDL($_) for @{$wsdlfile};
                 } else {
                     $self->wsdlobj(XML::Compile::WSDL11->new($wsdlfile));
                 }
