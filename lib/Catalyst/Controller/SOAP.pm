@@ -59,8 +59,7 @@
                     my $main = shift @{$wsdlfile};
                     $c->log->debug("WSDL: adding main WSDL $main");
                     $self->wsdlobj(XML::Compile::WSDL11->new($main));
-                    foreach my $file (@{$wsdlfile})
-                    {
+                    foreach my $file (@{$wsdlfile}) {
                         $c->log->debug("WSDL: adding additional WSDL $file");
                         $self->wsdlobj->addWSDL($file);
                     }
@@ -70,8 +69,7 @@
                 }
 
                 if (ref $schema eq 'ARRAY') {
-                    foreach my $file (@$schema)
-                    {
+                    foreach my $file (@$schema) {
                         $c->log->debug("WSDL: Import schema $file");
                         $self->wsdlobj->importDefinitions($file);
                     }
