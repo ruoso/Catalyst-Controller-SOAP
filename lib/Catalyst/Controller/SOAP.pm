@@ -57,15 +57,26 @@
 
                 if (ref $wsdlfile eq 'ARRAY') {
                     my $main = shift @{$wsdlfile};
+                    $c->log->debug("WSDL: adding main WSDL $main");
                     $self->wsdlobj(XML::Compile::WSDL11->new($main));
-                    $self->wsdlobj->addWSDL($_) for @{$wsdlfile};
+                    foreach my $file (@{$wsdlfile})
+                    {
+                        $c->log->debug("WSDL: adding additional WSDL $file");
+                        $self->wsdlobj->addWSDL($file);
+                    }
                 } else {
+                    $c->log->debug("WSDL: adding WSDL $wsdlfile");
                     $self->wsdlobj(XML::Compile::WSDL11->new($wsdlfile));
                 }
 
                 if (ref $schema eq 'ARRAY') {
-                    $self->wsdlobj->importDefinitions($_) for @{$schema};
+                    foreach my $file (@$schema)
+                    {
+                        $c->log->debug("WSDL: Import schema $file");
+                        $self->wsdlobj->importDefinitions($file);
+                    }
                 } elsif ($schema) {
+                    $c->log->debug("WSDL: Import schema $schema");
                     $self->wsdlobj->importDefinitions($schema)
                 }
             }
@@ -78,7 +89,7 @@
         my ($self, $c, $name, $value) = @_;
 
         die 'Cannot use WSDLPort without WSDL.'
-          unless $self->__init_wsdlobj;
+          unless $self->__init_wsdlobj($c);
 
         $self->ports({}) unless $self->ports();
         $self->ports->{$name} = $value;
@@ -100,6 +111,7 @@
 
         $style = $style =~ /document/i ? 'Document' : 'RPC';
         $use = $use =~ /literal/i ? 'Literal' : 'Encoded';
+        $c->log->debug("WSDLPort: [$name] [$value] [$path] [$style] [$use]");
 
         if ($style eq 'Document') {
             return
@@ -142,16 +154,16 @@
     sub _parse_SOAP_attr {
         my ($self, $c, $name, $value) = @_;
 
-        my $wsdlfile = $self->wsdl;
-        my $wsdlservice = $self->wsdlservice;
+        my $wsdlfile     = $self->wsdl;
+        my $wsdlservice  = $self->wsdlservice;
         my $compile_opts = $self->xml_compile || {};
-        $compile_opts->{reader} ||= {};
-        $compile_opts->{writer} ||= {};
+        my $reader_opts  = $compile_opts->{reader} || {};
+        my $writer_opts  = $compile_opts->{writer} || {};
 
         if ($wsdlfile) {
 
             die 'WSDL initialization failed.'
-              unless $self->__init_wsdlobj;
+              unless $self->__init_wsdlobj($c);
 
             $self->ports({}) unless $self->ports();
             my $operation = $self->wsdlobj->operation($name,
@@ -159,10 +171,11 @@
                                                       service => $wsdlservice)
               or die 'Every operation should be on the WSDL when using one.';
             my $portop = $operation->portOperation();
+            $c->log->debug("SOAP: @{[$operation->name]} $portop->{input}{message} $portop->{output}{message}");
 
             my $input_parts = $self->wsdlobj->find(message => $portop->{input}{message})
               ->{part};
-            $_->{compiled} = $self->wsdlobj->schemas->compile(READER => $_->{element}, %{$compile_opts->{reader}})
+            $_->{compiled} = $self->wsdlobj->schemas->compile(READER => $_->{element}, %$reader_opts)
               for @{$input_parts};
 
             $self->decoders({}) unless $self->decoders();
@@ -180,7 +193,7 @@
 
             my $output_parts = $self->wsdlobj->find(message => $portop->{output}{message})
               ->{part};
-            $_->{compiled} = $self->wsdlobj->schemas->compile(WRITER => $_->{element}, %{$compile_opts->{writer}})
+            $_->{compiled} = $self->wsdlobj->schemas->compile(WRITER => $_->{element}, %$writer_opts)
               for @{$output_parts};
 
             $self->encoders({}) unless $self->encoders();
@@ -510,7 +523,7 @@ as their value), those key / value pairs will be passed as options
 to the XML::Compile::Schema::compile() method.
 
   __PACKAGE__->config->{xml_compile} = {
-      reader => {sloppy_integers =>     writer => {sloppy_integers => 1},
+      reader => {sloppy_integers => 1}, writer => {sloppy_integers => 1},
   };
 
 
