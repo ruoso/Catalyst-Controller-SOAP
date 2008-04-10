@@ -524,6 +524,40 @@ to the XML::Compile::Schema::compile() method.
       reader => {sloppy_integers => 1}, writer => {sloppy_integers => 1},
   };
 
+=head1 USING WSDL AND Catalyst::Test
+
+If you'd like to use the built-in server from Catalyst::Test with your
+WSDL file (which likely defines an <address location="..."> that differs
+from the standard test server) you'll need to use the transport_hook
+option available with $wsdl->compileClient() in your test file.
+
+
+    # t/soap_message.t
+    use XML::Compile::WSDL11;
+    use XML::Compile::Transport::SOAPHTTP;
+    use Test::More qw(no_plan);
+
+    BEGIN {
+        use_ok 'Catalyst::Test', 'MyServer';
+    }
+
+    sub proxy_to_test_app
+    {
+        my ($request, $trace) = @_;
+        # request() is a function inserted by Catalyst::Test which
+        # sends HTTP requests to the just-started test server.
+        return request($request);
+    }
+
+    my $xml       = '/path/to/wsdl/file';
+    my $message   = 'YourMessage';
+    my $port_name = 'YourPort';
+    my $wsdl      = XML::Compile::WSDL11->new($xml);
+    my $client    = $wsdl->compileClient($message, 
+        port => $port_name, transport_hook => \&proxy_to_test_app,
+    );
+    $client->(...);
+
 
 =head1 TODO
 
@@ -549,6 +583,7 @@ L<XML::Compile::Schema>
 =head1 AUTHORS
 
 Daniel Ruoso C<daniel.ruoso@verticalone.pt>
+
 Drew Taylor C<drew@drewtaylor.com>
 
 =head1 BUG REPORTS
