@@ -18,7 +18,7 @@
           my @children = grep { UNIVERSAL::isa( $_, 'XML::LibXML::Element') } $body->getChildNodes();
           if (scalar @children != 1) {
               $c->stash->{soap}->fault
-                ({ code => [ 'env:Sender' => 'env:Body' ],
+                ({ code => 'Client',
                    reason => 'Bad Body', detail =>
                    'RPC messages should contain only one element inside body'})
             } else {
@@ -41,16 +41,16 @@
                 };
                 if ($@) {
                     $c->stash->{soap}->fault
-                      ({ code => [ 'env:Sender' => 'env:Body' ],
+                      ({ code => 'Client',
                          reason => 'Bad Body', detail =>
-                         'Malformed parts on the message body'});
+                         'Malformed parts on the message body: '.$@});
                 } else {
                     my $action = $controller->action_for($operation);
 
                     if (!$action ||
                         !grep { /RPC(Encoded|Literal)/ } @{$action->attributes->{ActionClass}}) {
                         $c->stash->{soap}->fault
-                          ({ code => [ 'env:Sender' => 'env:Body' ],
+                          ({ code => 'Client',
                              reason => 'Bad Operation', detail =>
                              'Invalid Operation'});
                     } else {

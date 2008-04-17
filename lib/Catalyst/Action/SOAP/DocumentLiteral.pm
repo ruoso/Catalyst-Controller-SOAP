@@ -22,9 +22,9 @@
           };
           if ($@) {
               $c->stash->{soap}->fault
-                ({ code => [ 'env:Sender' => 'env:Body' ],
+                ({ code => 'Client',
                    reason => 'Bad Body', detail =>
-                   'Schema validation on the body failed.'});
+                   'Schema validation on the body failed: '.$@});
           } else {
               $self->NEXT::execute($controller, $c, $body);
           }

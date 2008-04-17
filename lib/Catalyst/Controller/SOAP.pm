@@ -225,7 +225,7 @@
 
         if (scalar @{$c->error}) {
             $c->stash->{soap}->fault
-              ({ code => [ 'env:Sender' ],
+              ({ code => 'Client',
                  reason => 'Unexpected Error', detail =>
                  'Unexpected error in the application: '.(join "\n", @{$c->error} ).'!'});
             $c->error(0);
@@ -235,45 +235,54 @@
         my $response = XML::LibXML->createDocument();
 
         my $envelope = $response->createElementNS
-          ($namespace,"Envelope");
+          ($namespace,"SOAPENV:Envelope");
 
         $response->setDocumentElement($envelope);
 
         # TODO: we don't support header generation in response yet.
 
         my $body = $response->createElementNS
-          ($namespace,"Body");
+          ($namespace,"SOAPENV:Body");
 
         $envelope->appendChild($body);
 
         if ($soap->fault) {
             my $fault = $response->createElementNS
-              ($namespace, "Fault");
+              ($namespace, "SOAPENV:Fault");
             $body->appendChild($fault);
 
             my $code = $response->createElementNS
-              ($namespace, "Code");
+              ($namespace, "SOAPENV:faultcode");
             $fault->appendChild($code);
-
-            $self->_generate_Fault_Code($response,$code,$soap->fault->{code}, $namespace);
-
-            if ($soap->fault->{reason}) {
-                my $reason = $response->createElementNS
-                  ($namespace, "Reason");
-                $fault->appendChild($reason);
-                # TODO: we don't support the xml:lang attribute yet.
-                my $text = $response->createElementNS
-                  ($namespace, "Text");
-                $reason->appendChild($text);
-                $text->appendText($soap->fault->{reason});
+            my $codestr = $soap->fault->{code};
+            if (my ($ns, $val) = $codestr =~ m/^\{(.+)\}(.+)$/) {
+                my $prefix = $code->lookupNamespacePrefix($ns);
+                if ($prefix) {
+                    $code->appendText($prefix.':'.$val);
+                } else {
+                    $code->appendText($val);
+                }
+            } else {
+                $code->appendText('SOAPENV:'.$codestr);
             }
-            if ($soap->fault->{detail}) {
+
+            my $faultstring = $response->createElementNS
+              ($namespace, "SOAPENV:faultstring");
+            $fault->appendChild($faultstring);
+            $faultstring->appendText($soap->fault->{reason});
+
+            if (UNIVERSAL::isa($soap->fault->{detail}, 'XML::LibXML::Node')) {
                 my $detail = $response->createElementNS
-                  ($namespace, "Detail");
+                  ($namespace, "SOAPENV:detail");
+                $detail->appendChild($soap->fault->{detail});
+                $fault->appendChild($detail);
+            } elsif ($soap->fault->{detail}) {
+                my $detail = $response->createElementNS
+                  ($namespace, "SOAPENV:detail");
                 $fault->appendChild($detail);
                 # TODO: we don't support the xml:lang attribute yet.
                 my $text = $response->createElementNS
-                  ($namespace, "Text");
+                  ('http://www.w3.org/2001/XMLSchema','xsd:documentation');
                 $detail->appendChild($text);
                 $text->appendText($soap->fault->{detail});
             }
@@ -302,24 +311,6 @@
 
         $c->res->content_type('text/xml');
         $c->res->body($envelope->toString());
-    }
-
-    sub _generate_Fault_Code {
-        my ($self, $document, $codenode, $codeValue, $namespace) = @_;
-
-        my $value = $document->createElementNS
-          ($namespace, "Value");
-        if (ref $codeValue eq 'ARRAY') {
-            $value->appendText($codeValue->[0]);
-            my $subcode = $document->createElementNS
-              ($namespace, 'SubCode');
-            $codenode->appendChild($value);
-            $codenode->appendChild($subcode);
-            $self->_generate_Fault_Code($document, $subcode, $codeValue->[1], $namespace);
-        } else {
-            $value->appendText($codeValue) if $codeValue;
-            $codenode->appendChild($value);
-        }
     }
 
 
