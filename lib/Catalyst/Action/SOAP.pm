@@ -24,6 +24,7 @@
           $c->req->method eq 'POST') {
           my $body = $c->req->body;
           my $xml_str = join '', <$body>;
+          $c->log->debug("Incoming XML: $xml_str");
           eval {
               $c->stash->{soap}->envelope($xml_str);
               $c->stash->{soap}->parsed_envelope($self->xml_parser->parse_string($xml_str));

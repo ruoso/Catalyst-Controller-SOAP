@@ -15,7 +15,6 @@
           my $envelope = $c->stash->{soap}->parsed_envelope;
           my $namespace = $c->stash->{soap}->namespace || NS_SOAP_ENV;
           my ($body) = $envelope->getElementsByTagNameNS($namespace,'Body',0);
-          $c->log->debug("Incoming XML: " . $body->toString);
           my @children = grep { UNIVERSAL::isa( $_, 'XML::LibXML::Element') } $body->getChildNodes();
           if (scalar @children != 1) {
               $c->stash->{soap}->fault
