@@ -287,9 +287,6 @@
                 $text->appendText($soap->fault->{detail});
             }
         } else {
-            # TODO: Generate the body.
-            # At this moment, for the sake of getting something ready,
-            # let's implement the string return.
             if ($soap->string_return) {
                 $body->appendText($soap->string_return);
             } elsif (my $lit = $soap->literal_return) {
@@ -305,10 +302,11 @@
                   unless $self->wsdlobj;
 
                 my $arr = $self->encoders->{$soap->operation_name}->($response, $cmp);
-                $body->appendChild($_) for @{$arr};
+                $body->appendChild($_) for @$arr;
             }
         }
 
+        $c->log->debug("Outgoing XML: ".$envelope->toString());
         $c->res->content_type('text/xml');
         $c->res->body($envelope->toString());
     }

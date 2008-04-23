@@ -12,6 +12,7 @@
           my $envelope = $c->stash->{soap}->parsed_envelope;
           my $namespace = $c->stash->{soap}->namespace || NS_SOAP_ENV;
           my ($body) = $envelope->getElementsByTagNameNS($namespace, 'Body');
+          $c->log->debug("Incoming XML: " . $body->toString);
           my $operation = $self->name;
           $c->stash->{soap}->operation_name($operation);
           eval {
