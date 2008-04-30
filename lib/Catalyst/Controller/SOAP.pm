@@ -173,8 +173,13 @@
 
             my $input_parts = $self->wsdlobj->find(message => $portop->{input}{message})
               ->{part};
-            $_->{compiled} = $self->wsdlobj->schemas->compile(READER => $_->{element}, %$reader_opts)
-              for @{$input_parts};
+            for (@{$input_parts}) {
+                my $type = $_->{type} ? $_->{type} : $_->{element};
+                $c->log->debug("SOAP: @{[$operation->name]} input part $_->{name}, type $type");
+                $_->{compiled_reader} = $self->wsdlobj->schemas->compile
+                  (READER => $type,
+                   %$reader_opts);
+            };
 
             $self->decoders({}) unless $self->decoders();
             $self->decoders->{$name} = sub {
@@ -183,7 +188,7 @@
                 return
                   {
                    map {
-                       my $data = $_->{compiled}->(shift @nodes);
+                       my $data = $_->{compiled_reader}->(shift @nodes);
                        $_->{name} => $data;
                    } @{$input_parts}
                   }, @nodes;
@@ -191,10 +196,14 @@
 
             my $output_parts = $self->wsdlobj->find(message => $portop->{output}{message})
               ->{part};
-            $_->{compiled} = $self->wsdlobj->schemas->compile(WRITER => $_->{element},
-                                                              elements_qualified => 'ALL',
-                                                              %$writer_opts)
-              for @{$output_parts};
+            for (@{$output_parts}) {
+                my $type = $_->{type} ? $_->{type} : $_->{element};
+                $c->log->debug("SOAP: @{[$operation->name]} out part $_->{name}, type $type");
+                $_->{compiled_writer} = $self->wsdlobj->schemas->compile
+                  (WRITER => $_->{type} ? $_->{type} : $_->{element},
+                   elements_qualified => 'ALL',
+                   %$writer_opts);
+            }
 
             $self->encoders({}) unless $self->encoders();
             $self->encoders->{$name} = sub {
@@ -202,7 +211,7 @@
                 return
                   [
                    map {
-                       $_->{compiled}->($doc, $data->{$_->{name}})
+                       $_->{compiled_writer}->($doc, $data->{$_->{name}})
                    } @{$output_parts}
                   ];
             };
@@ -232,7 +241,7 @@
         }
 
         my $namespace = $soap->namespace || NS_SOAP_ENV;
-        my $response = XML::LibXML->createDocument();
+        my $response = XML::LibXML->createDocument('1.0','UTF8');
 
         my $envelope = $response->createElementNS
           ($namespace,"SOAPENV:Envelope");

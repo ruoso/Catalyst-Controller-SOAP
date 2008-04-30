@@ -23,7 +23,7 @@
       if ($c->req->content_type =~ /xml/ &&
           $c->req->method eq 'POST') {
           my $body = $c->req->body;
-          my $xml_str = join '', <$body>;
+          my $xml_str = ref $body ? (join '', <$body>) : $body;
           $c->log->debug("Incoming XML: $xml_str");
           eval {
               $c->stash->{soap}->envelope($xml_str);
