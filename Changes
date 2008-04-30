@@ -1,4 +1,46 @@
 ------------------------------------------------------------------------
+r7645 | ruoso | 2008-04-30 01:42:45 +0100 (Qua, 30 Abr 2008) | 1 line
+
+[C-C-SOAP] Better support for literal messages
+------------------------------------------------------------------------
+r7629 | drew | 2008-04-23 17:23:21 +0100 (Qua, 23 Abr 2008) | 1 line
+
+Get XML string before parsing so we can see invalid xml
+------------------------------------------------------------------------
+r7628 | drew | 2008-04-23 16:29:40 +0100 (Qua, 23 Abr 2008) | 2 lines
+
+Added logging of incoming and outgoing XML messages.
+
+------------------------------------------------------------------------
+r7619 | ruoso | 2008-04-17 14:02:47 +0100 (Qui, 17 Abr 2008) | 1 line
+
+[C-C-SOAP] Now generates SOAP1.1 fault messages. It was generating SOAP1.2 even in the SOAP1.1 namespace.
+------------------------------------------------------------------------
+r7618 | ruoso | 2008-04-17 12:07:36 +0100 (Qui, 17 Abr 2008) | 1 line
+
+[C-C-SOAP] forces "elements_qualified" on the schema writer.
+------------------------------------------------------------------------
+r7609 | drew | 2008-04-10 11:09:42 +0100 (Qui, 10 Abr 2008) | 2 lines
+
+Added documentation about using Catalyst::Test and WSDL files.
+
+------------------------------------------------------------------------
+r7582 | drew | 2008-04-07 11:56:50 +0100 (Seg, 07 Abr 2008) | 2 lines
+
+Fixed bracing style
+
+------------------------------------------------------------------------
+r7581 | drew | 2008-04-07 11:52:59 +0100 (Seg, 07 Abr 2008) | 3 lines
+
+- Fixed example for xml_compile options
+- Added debug information
+
+------------------------------------------------------------------------
+r7573 | ruoso | 2008-04-06 11:21:21 +0100 (Dom, 06 Abr 2008) | 1 line
+
+[C-C-SOAP] The test failures are from a bad make dist... Will upload again, with a sane make dist now. Increasing version to 0.8
+------------------------------------------------------------------------
+------------------------------------------------------------------------
 r7549 | ruoso | 2008-04-02 16:10:18 +0100 (Qua, 02 Abr 2008) | 1 line
 
 [C-C-SOAP] Tests for Document/Literal-Wrapped working. Supports several wsdls and schemas in the config.
