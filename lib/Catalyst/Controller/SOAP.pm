@@ -244,24 +244,24 @@
         my $response = XML::LibXML->createDocument('1.0','UTF8');
 
         my $envelope = $response->createElementNS
-          ($namespace,"SOAP-ENV:Envelope");
+          ($namespace,"Envelope");
 
         $response->setDocumentElement($envelope);
 
         # TODO: we don't support header generation in response yet.
 
         my $body = $response->createElementNS
-          ($namespace,"SOAP-ENV:Body");
+          ($namespace,"Body");
 
         $envelope->appendChild($body);
 
         if ($soap->fault) {
             my $fault = $response->createElementNS
-              ($namespace, "SOAP-ENV:Fault");
+              ($namespace, "Fault");
             $body->appendChild($fault);
 
             my $code = $response->createElementNS
-              ($namespace, "SOAP-ENV:faultcode");
+              ($namespace, "faultcode");
             $fault->appendChild($code);
             my $codestr = $soap->fault->{code};
             if (my ($ns, $val) = $codestr =~ m/^\{(.+)\}(.+)$/) {
@@ -272,22 +272,22 @@
                     $code->appendText($val);
                 }
             } else {
-                $code->appendText('SOAP-ENV:'.$codestr);
+                $code->appendText($codestr);
             }
 
             my $faultstring = $response->createElementNS
-              ($namespace, "SOAP-ENV:faultstring");
+              ($namespace, "faultstring");
             $fault->appendChild($faultstring);
             $faultstring->appendText($soap->fault->{reason});
 
             if (UNIVERSAL::isa($soap->fault->{detail}, 'XML::LibXML::Node')) {
                 my $detail = $response->createElementNS
-                  ($namespace, "SOAP-ENV:detail");
+                  ($namespace, "detail");
                 $detail->appendChild($soap->fault->{detail});
                 $fault->appendChild($detail);
             } elsif ($soap->fault->{detail}) {
                 my $detail = $response->createElementNS
-                  ($namespace, "SOAP-ENV:detail");
+                  ($namespace, "detail");
                 $fault->appendChild($detail);
                 # TODO: we don't support the xml:lang attribute yet.
                 my $text = $response->createElementNS
