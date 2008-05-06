@@ -236,7 +236,8 @@
             $c->stash->{soap}->fault
               ({ code => 'Client',
                  reason => 'Unexpected Error', detail =>
-                 'Unexpected error in the application: '.(join "\n", @{$c->error} ).'!'});
+                 'Unexpected error in the application: '.(join "\n", @{$c->error} ).'!'})
+                unless $c->stash->{soap}->fault;
             $c->error(0);
         }
 
