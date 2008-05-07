@@ -21,24 +21,49 @@
     sub _parse_attrs {
         my ( $self, $c, $name, @attrs ) = @_;
 
-        my @others = grep { $_ !~ /^WSDLPort/ } @attrs;
-        my $final = $self->SUPER::_parse_attrs($c, $name, @others);
+        my %raw_attributes;
 
-        my ($attr) = grep { $_ && $_ =~ /^WSDLPort/ } @attrs;
-        return $final unless $attr;
+        foreach my $attr (@attrs) {
 
-        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/ ) )
-        {
-            if ( defined $value ) {
-                ( $value =~ s/^'(.*)'$/$1/ ) || ( $value =~ s/^"(.*)"/$1/ );
+            # Parse out :Foo(bar) into Foo => bar etc (and arrayify)
+
+            if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/ ) ) {
+
+                if ( defined $value ) {
+                    ( $value =~ s/^'(.*)'$/$1/ ) || ( $value =~ s/^"(.*)"/$1/ );
+                }
+                push( @{ $raw_attributes{$key} }, $value );
             }
-            my %ret = $self->_parse_WSDLPort_attr($c, $name, $value);
-            push( @{ $final->{$_} }, $ret{$_} ) for
-              keys %ret;
         }
 
+        my $hash = (ref $self ? $self : $self->config); # hate app-is-class
 
-        return $final;
+        if (exists $hash->{actions} || exists $hash->{action}) {
+            my $a = $hash->{actions} || $hash->{action};
+            %raw_attributes = ((exists $a->{'*'} ? %{$a->{'*'}} : ()),
+                               %raw_attributes,
+                               (exists $a->{$name} ? %{$a->{$name}} : ()));
+        }
+
+        my %final_attributes;
+
+        foreach my $key (keys %raw_attributes) {
+
+            my $raw = $raw_attributes{$key};
+
+            foreach my $value (ref($raw) eq 'ARRAY' ? @$raw : $raw) {
+
+                my $meth = "_parse_${key}_attr";
+                my %new_attributes;
+                if ( $self->can($meth) ) {
+                    %new_attributes = $self->$meth( $c, $name, $value );
+                }
+                push( @{ $final_attributes{$_} }, $new_attributes{$_} )
+                  for keys %new_attributes;
+            }
+        }
+
+        return \%final_attributes;
     }
 
 
