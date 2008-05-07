@@ -148,7 +148,10 @@
             push @{$self->rpc_endpoint_paths}, $path
               unless grep { $_ eq $path }
                 @{$self->rpc_endpoint_paths};
-            return $self->_parse_SOAP_attr($c, $name, $style.$use)
+            return
+              (
+               $self->_parse_SOAP_attr($c, $name, $style.$use),
+              );
         }
     }
 
@@ -163,7 +166,7 @@
             my $action = $self->create_action
               (
                name => '___base_rpc_endpoint',
-               code => sub { },
+               code => sub {  },
                reverse => ($namespace ? $namespace.'/' : '') . '___base_rpc_endpoint',
                namespace => $namespace,
                class => (ref $self || $self),
@@ -255,7 +258,7 @@
         my ($self, $c) = (shift, shift);
         my $soap = $c->stash->{soap};
 
-        return $self->NEXT::end($c, @_) unless $soap;
+        return $self->next::method($c, @_) unless $soap;
 
         if (scalar @{$c->error}) {
             $c->stash->{soap}->fault

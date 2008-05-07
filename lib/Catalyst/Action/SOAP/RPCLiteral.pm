@@ -1,11 +1,12 @@
 { package Catalyst::Action::SOAP::RPCLiteral;
 
   use base qw/Catalyst::Action::SOAP/;
+  use Class::C3;
 
   sub execute {
       my $self = shift;
       my ( $controller, $c ) = @_;
-      $self->NEXT::execute($controller, $c, $c->stash->{soap}->arguments);
+      $self->next::method($controller, $c, $c->stash->{soap}->arguments);
   }
 };
 

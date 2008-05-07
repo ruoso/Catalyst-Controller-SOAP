@@ -26,7 +26,7 @@
                    reason => 'Bad Body', detail =>
                    'Schema validation on the body failed: '.$@});
           } else {
-              $self->NEXT::execute($controller, $c, $body);
+              $self->next::method($controller, $c, $body);
           }
       }
   }

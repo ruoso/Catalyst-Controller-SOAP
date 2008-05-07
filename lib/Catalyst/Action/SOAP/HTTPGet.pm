@@ -6,7 +6,7 @@
         my $self = shift;
         my ( $controller, $c ) = @_;
         $self->prepare_soap_helper($controller,$c);
-        $self->NEXT::execute(@_);
+        $self->next::method(@_);
     }
 };
 
