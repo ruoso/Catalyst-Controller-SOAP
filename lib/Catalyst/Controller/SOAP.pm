@@ -199,50 +199,57 @@
             my $portop = $operation->portOperation();
             $c->log->debug("SOAP: @{[$operation->name]} $portop->{input}{message} $portop->{output}{message}");
 
-            my $input_parts = $self->wsdlobj->find(message => $portop->{input}{message})
-              ->{part};
-            for (@{$input_parts}) {
-                my $type = $_->{type} ? $_->{type} : $_->{element};
-                $c->log->debug("SOAP: @{[$operation->name]} input part $_->{name}, type $type");
-                $_->{compiled_reader} = $self->wsdlobj->schemas->compile
-                  (READER => $type,
-                   %$reader_opts);
-            };
+            if ($portop->{input}{message}) {
 
-            $self->decoders({}) unless $self->decoders();
-            $self->decoders->{$name} = sub {
-                my $body = shift;
-                my @nodes = grep { UNIVERSAL::isa($_, 'XML::LibXML::Element') } $body->childNodes();
-                return
-                  {
-                   map {
-                       my $data = $_->{compiled_reader}->(shift @nodes);
-                       $_->{name} => $data;
-                   } @{$input_parts}
-                  }, @nodes;
-            };
+                my $input_parts = $self->wsdlobj->find(message => $portop->{input}{message})
+                  ->{part};
+                for (@{$input_parts}) {
+                    my $type = $_->{type} ? $_->{type} : $_->{element};
+                    $c->log->debug("SOAP: @{[$operation->name]} input part $_->{name}, type $type");
+                    $_->{compiled_reader} = $self->wsdlobj->schemas->compile
+                      (READER => $type,
+                       %$reader_opts);
+                };
 
-            my $output_parts = $self->wsdlobj->find(message => $portop->{output}{message})
-              ->{part};
-            for (@{$output_parts}) {
-                my $type = $_->{type} ? $_->{type} : $_->{element};
-                $c->log->debug("SOAP: @{[$operation->name]} out part $_->{name}, type $type");
-                $_->{compiled_writer} = $self->wsdlobj->schemas->compile
-                  (WRITER => $_->{type} ? $_->{type} : $_->{element},
-                   elements_qualified => 'ALL',
-                   %$writer_opts);
+                $self->decoders({}) unless $self->decoders();
+                $self->decoders->{$name} = sub {
+                    my $body = shift;
+                    my @nodes = grep { UNIVERSAL::isa($_, 'XML::LibXML::Element') } $body->childNodes();
+                    return
+                      {
+                       map {
+                           my $data = $_->{compiled_reader}->(shift @nodes);
+                           $_->{name} => $data;
+                       } @{$input_parts}
+                      }, @nodes;
+                };
             }
 
-            $self->encoders({}) unless $self->encoders();
-            $self->encoders->{$name} = sub {
-                my ($doc, $data) = @_;
-                return
-                  [
-                   map {
-                       $_->{compiled_writer}->($doc, $data->{$_->{name}})
-                   } @{$output_parts}
-                  ];
-            };
+            if ($portop->{output}{message}) {
+
+                my $output_parts = $self->wsdlobj->find(message => $portop->{output}{message})
+                  ->{part};
+                for (@{$output_parts}) {
+                    my $type = $_->{type} ? $_->{type} : $_->{element};
+                    $c->log->debug("SOAP: @{[$operation->name]} out part $_->{name}, type $type");
+                    $_->{compiled_writer} = $self->wsdlobj->schemas->compile
+                      (WRITER => $_->{type} ? $_->{type} : $_->{element},
+                       elements_qualified => 'ALL',
+                       %$writer_opts);
+                }
+
+                $self->encoders({}) unless $self->encoders();
+                $self->encoders->{$name} = sub {
+                    my ($doc, $data) = @_;
+                    return
+                      [
+                       map {
+                           $_->{compiled_writer}->($doc, $data->{$_->{name}})
+                       } @{$output_parts}
+                      ];
+                };
+
+            }
         }
 
         my $actionclass = ($value =~ /^\+/ ? $value :
