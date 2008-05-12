@@ -10,7 +10,7 @@
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
     use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
 
-    our $VERSION = '0.10';
+    our $VERSION = '1.10';
 
     __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
          ports wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths);
