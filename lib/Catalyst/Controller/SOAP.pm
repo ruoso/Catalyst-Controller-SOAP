@@ -5,6 +5,7 @@
     use XML::LibXML;
     use XML::Compile::WSDL11;
     use UNIVERSAL qw(isa);
+    use Class::C3;
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
     use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
@@ -265,7 +266,7 @@
         my ($self, $c) = (shift, shift);
         my $soap = $c->stash->{soap};
 
-        return $self->next::method($c, @_) unless $soap;
+        return $self->maybe::next::method($c, @_) unless $soap;
 
         if (scalar @{$c->error}) {
             $c->stash->{soap}->fault

@@ -32,7 +32,8 @@
                 eval {
                     if ($controller->wsdlobj) {
                         my $decoder = $controller->decoders->{$operation};
-                        my ($args) = $decoder->($rpc_element);
+                        my ($args) = $decoder->($rpc_element)
+                          if UNIVERSAL::isa($decoder,'CODE');
                         $c->stash->{soap}->arguments($args);
                     } else {
                         my $arguments = $rpc_element->getChildNodes();
