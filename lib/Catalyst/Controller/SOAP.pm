@@ -206,7 +206,7 @@
                   ->{part};
                 for (@{$input_parts}) {
                     my $type = $_->{type} ? $_->{type} : $_->{element};
-                    $c->log->debug("SOAP: @{[$operation->name]} input part $_->{name}, type $type");
+                    $c->log->debug("SOAP: @{[$operation->name]} input part: $_->{name}, type: $type, args:[" . join( ', ', map { "$_ => $reader_opts->{$_}" } keys %$reader_opts)."]\n");
                     $_->{compiled_reader} = $self->wsdlobj->schemas->compile
                       (READER => $type,
                        %$reader_opts);
@@ -232,9 +232,9 @@
                   ->{part};
                 for (@{$output_parts}) {
                     my $type = $_->{type} ? $_->{type} : $_->{element};
-                    $c->log->debug("SOAP: @{[$operation->name]} out part $_->{name}, type $type");
+                    $c->log->debug("SOAP: @{[$operation->name]} output part: $_->{name}, type: $type, args:[" . join( ', ', map { "$_ => $writer_opts->{$_}" } keys %$writer_opts)."]\n");
                     $_->{compiled_writer} = $self->wsdlobj->schemas->compile
-                      (WRITER => $_->{type} ? $_->{type} : $_->{element},
+                      (WRITER => $type,
                        elements_qualified => 'ALL',
                        %$writer_opts);
                 }
@@ -352,9 +352,10 @@
             }
         }
 
-        $c->log->debug("Outgoing XML: ".$envelope->toString());
+        my $out = $envelope->toString();
+        $c->log->debug("Outgoing XML: ".$out);
         $c->res->content_type('text/xml');
-        $c->res->body($envelope->toString());
+        $c->res->body($out);
     }
 
 
