@@ -36,7 +36,7 @@ made.
 
 =head1 AUTHORS
 
-Daniel Ruoso <daniel.ruoso@verticalone.pt>
+Daniel Ruoso <daniel@ruoso.com>
 
 =head1 BUG REPORTS
 

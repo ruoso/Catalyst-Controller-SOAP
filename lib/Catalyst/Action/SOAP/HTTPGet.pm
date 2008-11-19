@@ -35,7 +35,7 @@ There is not much to be done here.
 
 =head1 AUTHORS
 
-Daniel Ruoso <daniel.ruoso@verticalone.pt>
+Daniel Ruoso <daniel@ruoso.com>
 
 =head1 BUG REPORTS
 

@@ -620,7 +620,7 @@ L<XML::Compile::Schema>
 
 =head1 AUTHORS
 
-Daniel Ruoso C<daniel.ruoso@verticalone.pt>
+Daniel Ruoso C<daniel@ruoso.com>
 
 Drew Taylor C<drew@drewtaylor.com>
 

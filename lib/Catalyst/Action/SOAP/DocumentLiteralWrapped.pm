@@ -94,7 +94,7 @@ Well, here? nothing, all the work is done in the superclass.
 
 =head1 AUTHOR
 
-Daniel Ruoso <daniel.ruoso@verticalone.pt>
+Daniel Ruoso <daniel@ruoso.com>
 
 =head1 BUG REPORTS
 

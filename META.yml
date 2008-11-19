@@ -3,7 +3,7 @@ name: Catalyst-Controller-SOAP
 abstract: Add SOAP features to the Catalyst Framework
 version: 0.0.1
 author:
-  - Daniel Ruoso <daniel.ruoso@verticalone.pt>
+  - Daniel Ruoso <daniel@ruoso.com>
 license: perl
 distribution_type: module
 requires:

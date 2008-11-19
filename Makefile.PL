@@ -9,5 +9,5 @@ WriteMakefile(
                            XML::Compile::SOAP => 0},
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Catalyst/Controller/SOAP.pm', # retrieve abstract from module
-       AUTHOR         => 'Daniel Ruoso <daniel.ruoso@verticalone.pt>') : ()),
+       AUTHOR         => 'Daniel Ruoso <daniel@ruoso.com>') : ()),
 );
