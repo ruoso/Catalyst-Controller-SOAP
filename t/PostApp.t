@@ -130,6 +130,11 @@ $response = soap_xml_post
 like($response->content, qr/greeting[^>]+\>HELLO WORLD\!\<\//, ' WSDLPort RPC Literal response: '.$response->content);
 # diag("/withwsdl2/Greet: ".$response->content);
 
+# provoke a SOAP Fault
+$response = soap_xml_post
+  ('/ws/hello','');
+my $soapfault = 'SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Client'; 
+ok($response->content =~ /$soapfault/ , ' SOAP Fault response: '.$response->content);
 
 sub soap_xml_post {
     my $path = shift;

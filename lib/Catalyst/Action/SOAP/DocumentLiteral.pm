@@ -22,7 +22,7 @@
           };
           if ($@) {
               $c->stash->{soap}->fault
-                ({ code => 'Client',
+                ({ code => 'SOAP-ENV:Client',
                    reason => 'Bad Body', detail =>
                    'Schema validation on the body failed: '.$@});
           } else {

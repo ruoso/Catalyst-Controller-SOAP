@@ -30,10 +30,10 @@
               $c->stash->{soap}->parsed_envelope($self->xml_parser->parse_string($xml_str));
           };
           if ($@) {
-              $c->stash->{soap}->fault({ code => 'Client', reason => 'Bad XML Message', detail => $@});
+              $c->stash->{soap}->fault({ code => 'SOAP-ENV:Client', reason => 'Bad XML Message', detail => $@});
           }
       } else {
-          $c->stash->{soap}->fault({ code => 'Client', reason => 'Bad content-type/method'});
+          $c->stash->{soap}->fault({ code => 'SOAP-ENV:Client', reason => 'Bad content-type/method'});
       }
   }
 };
