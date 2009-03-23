@@ -4,6 +4,7 @@
     use base qw/Catalyst::Controller/;
     use XML::LibXML;
     use XML::Compile::WSDL11;
+    use XML::Compile::SOAP11;
     use UNIVERSAL qw(isa);
     use Class::C3;
 
@@ -129,15 +130,12 @@
           or die 'Every operation should be on the WSDL when using one.';
 
         # TODO: Use more intelligence when selecting the address.
-        my ($path) = $operation->endPointAddresses();
+        my ($path) = $operation->endPoints;
 
         $path =~ s#^[^:]+://[^/]+##;
 
-        # Finding out the style and input body use for this operation
-        my $binding = $self->wsdlobj->find(binding => $operation->port->{binding});
-        my $style = $binding->{'{'.NS_WSDLSOAP.'}binding'}[0]->getAttribute('style');
-        my ($use) = map { $_->{input}{'{'.NS_WSDLSOAP.'}body'}[0]->getAttribute('use') }
-          grep { $_->{name} eq $name } @{ $binding->{operation} || [] };
+        my $style = $operation->style;
+        my $use = $operation->{input_def}->{body}->{use};
 
         $style = $style =~ /document/i ? 'Document' : 'RPC';
         $use = $use =~ /literal/i ? 'Literal' : 'Encoded';
@@ -204,19 +202,22 @@
                                                       port => $self->ports->{$name},
                                                       service => $wsdlservice)
               or die 'Every operation should be on the WSDL when using one.';
-            my $portop = $operation->portOperation();
-            $c->log->debug("SOAP: @{[$operation->name]} $portop->{input}{message} $portop->{output}{message}")
+            
+            my $in_message = $operation->{input_def}->{body}->{message};
+            my $out_message = $operation->{output_def}->{body}->{message};
+
+            $c->log->debug("SOAP: ".$operation->name." $in_message $out_message")
               if $c->debug;
 
-            if ($portop->{input}{message}) {
-
-                my $input_parts = $self->wsdlobj->find(message => $portop->{input}{message})
-                  ->{part};
+            if ($in_message) {
+                my $input_parts = $self->wsdlobj->findDef(message => $in_message)
+                  ->{wsdl_part};
+                  
                 for (@{$input_parts}) {
                     my $type = $_->{type} ? $_->{type} : $_->{element};
                     $c->log->debug("SOAP: @{[$operation->name]} input part $_->{name}, type $type")
                       if $c->debug;
-                    $_->{compiled_reader} = $self->wsdlobj->schemas->compile
+                    $_->{compiled_reader} = $self->wsdlobj->compile
                       (READER => $type,
                        %$reader_opts);
                 };
@@ -235,15 +236,15 @@
                 };
             }
 
-            if ($portop->{output}{message}) {
+            if ($out_message) {
 
-                my $output_parts = $self->wsdlobj->find(message => $portop->{output}{message})
-                  ->{part};
+                my $output_parts = $self->wsdlobj->findDef(message => $out_message)
+                  ->{wsdl_part};
                 for (@{$output_parts}) {
                     my $type = $_->{type} ? $_->{type} : $_->{element};
                     $c->log->debug("SOAP: @{[$operation->name]} out part $_->{name}, type $type")
                       if $c->debug;
-                    $_->{compiled_writer} = $self->wsdlobj->schemas->compile
+                    $_->{compiled_writer} = $self->wsdlobj->compile
                       (WRITER => $_->{type} ? $_->{type} : $_->{element},
                        elements_qualified => 'ALL',
                        %$writer_opts);
