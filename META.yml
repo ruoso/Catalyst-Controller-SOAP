@@ -9,6 +9,9 @@ distribution_type: module
 requires:
   XML::LibXML: 0
   Catalyst::Controller: 5.7000
+  Class::C3: 0
+  XML::Compile::WSDL11: 0
+  XML::Compile::SOAP11: 0
 meta-spec:
   version: 1.3
   url: http://module-build.sourceforge.net/META-spec-v1.3.html
