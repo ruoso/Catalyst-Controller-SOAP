@@ -1,4 +1,4 @@
-use Test::More tests => 13;
+use Test::More tests => 14;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -32,7 +32,7 @@ $response = soap_xml_post
   ('/withwsdl/Greet',
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
       <Body>
-        <GreetingSpecifier>
+        <GreetingSpecifier xmlns="http://example.com/hello">
           <who>World</who>
           <greeting>Hello</greeting>
           <count>1</count>
@@ -46,14 +46,14 @@ like($response->content, qr/greeting\>1 Hello World\!\<\//, 'Literal response: '
 
 $response = soap_xml_post
   ('/withwsdl/doclw',
-   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><who>World</who><greeting>Hello</greeting><count>2</count></GreetingSpecifier></Body></Envelope>'
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier xmlns="http://example.com/hello"><who>World</who><greeting>Hello</greeting><count>2</count></GreetingSpecifier></Body></Envelope>'
   );
 like($response->content, qr/greeting\>2 Hello World\!\<\//, ' Document/Literal Wrapped response: '.$response->content);
 # diag("/withwsdl/doclw: ".$response->content);
 
 $response = soap_xml_post
   ('/withwsdl2/Greet','
-    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet><who>World</who><greeting>Hello</greeting><count>3</count></Greet></Body></Envelope>
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet xmlns="http://example.com/hello"><who>World</who><greeting>Hello</greeting><count>3</count></Greet></Body></Envelope>
   ');
 like($response->content, qr/greeting[^>]+\>3 Hello World\!Math::BigInt\<\//, 'RPC Literal response: '.$response->content);
 # diag("/withwsdl2/Greet: ".$response->content);
@@ -62,7 +62,7 @@ $response = soap_xml_post
   ('/withwsdl2/Greet','
     <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
          <Body>
-            <Greet>
+            <Greet xmlns="http://example.com/hello">
                <who>World</who>
                <greeting>Hello</greeting>
                <count>4</count>
@@ -75,7 +75,7 @@ ok($response->content =~ /greeting[^>]+\>4 Hello World\!Math::BigInt\<\//, 'RPC 
 
 $response = soap_xml_post
   ('/withwsdl/Greet',
-   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier><name>World</name><greeting>Hello</greeting></GreetingSpecifier></Body></Envelope>'
+   '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier xmlns="http://example.com/hello"><name>World</name><greeting>Hello</greeting></GreetingSpecifier></Body></Envelope>'
   );
 like($response->content, qr/Fault/, 'Fault on malformed body for Document-Literal: '.$response->content);
 # diag("/withwsdl/Greet: ".$response->content);
@@ -91,7 +91,7 @@ $response = soap_xml_post
   ('/hello/Greet',
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
       <Body>
-        <GreetingSpecifier>
+        <GreetingSpecifier xmlns="http://example.com/hello">
           <who>World</who>
           <greeting>Hello</greeting>
         </GreetingSpecifier>
@@ -105,7 +105,7 @@ $response = soap_xml_post
   ('/hello/Shout',
    '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
       <Body>
-        <GreetingSpecifier>
+        <GreetingSpecifier xmlns="http://example.com/hello">
           <who>World</who>
           <greeting>Hello</greeting>
         </GreetingSpecifier>
@@ -118,14 +118,14 @@ like($response->content, qr/greeting\>HELLO WORLD\!\!\<\//, ' using WSDLPort res
 
 $response = soap_xml_post
   ('/rpcliteral','
-    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet><who>World</who><greeting>Hello</greeting></Greet></Body></Envelope>
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet xmlns="http://example.com/hello"><who>World</who><greeting>Hello</greeting></Greet></Body></Envelope>
   ');
 like($response->content, qr/greeting[^>]+\>Hello World\!\<\//, ' WSDLPort RPC Literal response: '.$response->content);
 # diag("/withwsdl2/Greet: ".$response->content);
 
 $response = soap_xml_post
   ('/rpcliteral','
-    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Shout><who>World</who><greeting>Hello</greeting></Shout></Body></Envelope>
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Shout xmlns="http://example.com/hello"><who>World</who><greeting>Hello</greeting></Shout></Body></Envelope>
   ');
 like($response->content, qr/greeting[^>]+\>HELLO WORLD\!\<\//, ' WSDLPort RPC Literal response: '.$response->content);
 # diag("/withwsdl2/Greet: ".$response->content);
