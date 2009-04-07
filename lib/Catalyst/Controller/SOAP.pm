@@ -7,6 +7,7 @@
     use XML::Compile::SOAP11;
     use UNIVERSAL qw(isa);
     use Class::C3;
+    use Encode;
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
     use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
