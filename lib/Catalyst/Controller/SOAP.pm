@@ -370,8 +370,8 @@
 
         $c->res->status(500) if $soap->fault;
         $c->log->debug("Outgoing XML: ".$envelope->toString()) if $c->debug;
-        $c->res->content_type('text/xml');
-        $c->res->body($envelope->toString());
+        $c->res->content_type('text/xml; charset=UTF-8');
+        $c->res->body(encode('utf8',$envelope->toString()));
     }
 
 
