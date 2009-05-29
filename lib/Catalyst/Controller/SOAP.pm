@@ -129,7 +129,6 @@
                                                   port => $value,
                                                   service => $self->wsdlservice)
           or die 'Every operation should be on the WSDL when using one.';
-
         # TODO: Use more intelligence when selecting the address.
         my ($path) = $operation->endPoints;
 
@@ -203,17 +202,19 @@
                                                       port => $self->ports->{$name},
                                                       service => $wsdlservice)
               or die 'Every operation should be on the WSDL when using one.';
-            
-            my $in_message = $operation->{input_def}->{body}->{message};
-            my $out_message = $operation->{output_def}->{body}->{message};
 
-            $c->log->debug("SOAP: ".$operation->name." $in_message $out_message")
+            my $in_message = $operation->{input_def}->{body}->{message};
+            my $in_namespace = $operation->{input_def}{body}{namespace};
+            my $out_message = $operation->{output_def}->{body}->{message};
+            my $out_namespace = $operation->{output_def}{body}{namespace};
+
+            $c->log->debug("SOAP: ".$operation->name." ".($in_message||'(none)').' '.($out_message||'(none)'))
               if $c->debug;
 
             if ($in_message) {
                 my $input_parts = $self->wsdlobj->findDef(message => $in_message)
                   ->{wsdl_part};
-                  
+
                 for (@{$input_parts}) {
                     my $type = $_->{type} ? $_->{type} : $_->{element};
                     $c->log->debug("SOAP: @{[$operation->name]} input part $_->{name}, type $type")
@@ -237,6 +238,7 @@
                 };
             }
 
+            my $name = $operation->name;
             if ($out_message) {
 
                 my $output_parts = $self->wsdlobj->findDef(message => $out_message)
@@ -252,15 +254,28 @@
                 }
 
                 $self->encoders({}) unless $self->encoders();
-                $self->encoders->{$name} = sub {
+                if ($operation->style eq 'rpc') {
+                  $self->encoders->{$name} = sub {
+                    my ($doc, $data) = @_;
+                    my $element = $doc->createElementNS($out_namespace,$name);
+                    $element->appendChild($_) for map {
+                      $_->{compiled_writer}->($doc, $data->{$_->{name}})
+                    } @{$output_parts};
+                    return
+                      [ $element ];
+                  };
+
+                } else {
+                  $self->encoders->{$name} = sub {
                     my ($doc, $data) = @_;
                     return
                       [
                        map {
-                           $_->{compiled_writer}->($doc, $data->{$_->{name}})
+                         $_->{compiled_writer}->($doc, $data->{$_->{name}})
                        } @{$output_parts}
                       ];
-                };
+                  };
+                }
 
             }
         }
@@ -295,18 +310,16 @@
         my $envelope;
 
         if ($soap->fault) {
-            
-            $envelope = $response->createElement("SOAP-ENV:Envelope");
-            my $nsattr = XML::LibXML::Attr->new('xmlns:SOAP-ENV', NS_SOAP_ENV);
-            $envelope->addChild($nsattr);
-            
+
+            $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+
             $response->setDocumentElement($envelope);
 
-            my $body = $response->createElement("SOAP-ENV:Body");
+            my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
 
             $envelope->appendChild($body);
 
-            my $fault = $response->createElement("SOAP-ENV:Fault");
+            my $fault = $response->createElementNS(NS_SOAP_ENV, "Fault");
             $body->appendChild($fault);
 
             my $code = $response->createElement("faultcode");
@@ -341,13 +354,13 @@
                 $text->appendText($soap->fault->{detail});
             }
         } else {
-            $envelope = $response->createElementNS($namespace, "Envelope");
+            $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
 
             $response->setDocumentElement($envelope);
 
             # TODO: we don't support header generation in response yet.
 
-            my $body = $response->createElementNS($namespace, "Body");
+            my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
 
             $envelope->appendChild($body);        
             if ($soap->string_return) {
@@ -365,6 +378,7 @@
                   unless $self->wsdlobj;
 
                 my $arr = $self->encoders->{$soap->operation_name}->($response, $cmp);
+
                 $body->appendChild($_) for @$arr;
             }
         }

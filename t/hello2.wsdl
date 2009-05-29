@@ -34,10 +34,10 @@
     <wsdl:operation name="Greet">
       <soap:operation soapAction="http://example.com/" />
       <wsdl:input>
-        <soap:body use="literal"/>
+        <soap:body use="literal" namespace="http://example.com/hello"/>
       </wsdl:input>
       <wsdl:output>
-        <soap:body use="literal"/>
+        <soap:body use="literal" namespace="http://example.com/hello"/>
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>

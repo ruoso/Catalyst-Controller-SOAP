@@ -50,10 +50,10 @@
     <wsdl:operation name="Greet">
       <soap:operation style="document"/>
       <wsdl:input>
-        <soap:body use="literal"/>
+        <soap:body use="literal" namespace="http://example.com/hello"/>
       </wsdl:input>
       <wsdl:output>
-        <soap:body use="literal"/>
+        <soap:body use="literal" namespace="http://example.com/hello"/>
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
@@ -62,10 +62,10 @@
     <wsdl:operation name="Shout">
       <soap:operation style="document"/>
       <wsdl:input>
-        <soap:body use="literal"/>
+        <soap:body use="literal" namespace="http://example.com/hello"/>
       </wsdl:input>
       <wsdl:output>
-        <soap:body use="literal"/>
+        <soap:body use="literal" namespace="http://example.com/hello"/>
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
