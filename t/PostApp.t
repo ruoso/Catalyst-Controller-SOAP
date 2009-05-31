@@ -140,7 +140,7 @@ sub soap_xml_post {
     my $path = shift;
     my $content = shift;
 
-    local %ENV;
+    local %ENV = %ENV;
     $ENV{REMOTE_ADDR} ='127.0.0.1';
     $ENV{CONTENT_LENGTH} = length $content;
     $ENV{CONTENT_TYPE} ='application/soap+xml';
