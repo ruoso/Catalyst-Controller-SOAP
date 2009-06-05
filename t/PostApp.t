@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 16;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -141,6 +141,12 @@ $response = soap_xml_post
     <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Blag xmlns="http://example.com/hello"><who>World</who><greeting>ok 15</greeting></Blag></Body></Envelope>
   ');
 is($response->content, 'ok 15');
+
+$response = soap_xml_post
+  ('/hello5','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><GreetingSpecifier xmlns="http://example.com/hello"><who>World</who><greeting>ok 16</greeting></GreetingSpecifier></Body></Envelope>
+  ');
+is($response->content, 'ok 16');
 
 sub soap_xml_post {
     my $path = shift;
