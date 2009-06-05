@@ -20,4 +20,11 @@ sub Shout : WSDLPort('Greet') {
     $c->stash->{soap}->compile_return({ greeting => uc($grt).' '.uc($who).'!' });
 }
 
+sub Blag : WSDLPort('Greet') {
+    my ( $self, $c, $args ) = @_;
+    my $who = $args->{who};
+    my $grt = $args->{greeting};
+    $c->res->body($grt);
+}
+
 1;

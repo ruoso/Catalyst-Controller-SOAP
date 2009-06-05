@@ -30,6 +30,9 @@
       <wsdl:input message="hello:AskGreeting"/>
       <wsdl:output message="hello:GiveGreeting"/>
     </wsdl:operation>
+    <wsdl:operation name="Blag">
+      <wsdl:input message="hello:AskGreeting"/>
+    </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="Greeting" type="hello:Greeting">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
@@ -50,6 +53,12 @@
       <wsdl:output>
         <soap:body use="literal" namespace="http://example.com/hello"/>
       </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Blag">
+      <soap:operation soapAction="http://example.com/" />
+      <wsdl:input>
+        <soap:body use="literal" namespace="http://example.com/hello"/>
+      </wsdl:input>
     </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="GreetService">

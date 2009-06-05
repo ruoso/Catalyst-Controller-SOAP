@@ -293,7 +293,8 @@
         my ($self, $c) = (shift, shift);
         my $soap = $c->stash->{soap};
 
-        return $self->maybe::next::method($c, @_) unless $soap;
+        return $self->maybe::next::method($c, @_)
+          unless $soap;
 
         if (scalar @{$c->error}) {
             $c->stash->{soap}->fault
@@ -354,18 +355,18 @@
                 $text->appendText($soap->fault->{detail});
             }
         } else {
-            $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
 
-            $response->setDocumentElement($envelope);
-
-            # TODO: we don't support header generation in response yet.
-
-            my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
-
-            $envelope->appendChild($body);        
             if ($soap->string_return) {
+                $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+                $response->setDocumentElement($envelope);
+                my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
+                $envelope->appendChild($body);
                 $body->appendText($soap->string_return);
             } elsif (my $lit = $soap->literal_return) {
+                $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+                $response->setDocumentElement($envelope);
+                my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
+                $envelope->appendChild($body);
                 if (ref $lit eq 'XML::LibXML::NodeList') {
                     for ($lit->get_nodelist) {
                         $body->appendChild($_);
@@ -374,6 +375,10 @@
                     $body->appendChild($lit);
                 }
             } elsif (my $cmp = $soap->compile_return) {
+                $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+                $response->setDocumentElement($envelope);
+                my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
+                $envelope->appendChild($body);
                 die 'Tried to use compile_return without WSDL'
                   unless $self->wsdlobj;
 
@@ -383,10 +388,14 @@
             }
         }
 
-        $c->res->status(500) if $soap->fault;
-        $c->log->debug("Outgoing XML: ".$envelope->toString()) if $c->debug;
-        $c->res->content_type('text/xml; charset=UTF-8');
-        $c->res->body(encode('utf8',$envelope->toString()));
+        if ($envelope) {
+          $c->res->status(500) if $soap->fault;
+          $c->log->debug("Outgoing XML: ".$envelope->toString()) if $c->debug;
+          $c->res->content_type('text/xml; charset=UTF-8');
+          $c->res->body(encode('utf8',$envelope->toString()));
+        } else {
+          $c->maybe::next::method($c, @_);
+        }
     }
 
 

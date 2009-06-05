@@ -1,4 +1,4 @@
-use Test::More tests => 14;
+use Test::More tests => 15;
 use File::Spec::Functions;
 use HTTP::Response;
 use IPC::Open3;
@@ -136,6 +136,12 @@ $response = soap_xml_post
 my $soapfault = 'Fault'; 
 ok($response->content =~ /$soapfault/ , ' SOAP Fault response: '.$response->content);
 
+$response = soap_xml_post
+  ('/rpcliteral','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Blag xmlns="http://example.com/hello"><who>World</who><greeting>ok 15</greeting></Blag></Body></Envelope>
+  ');
+is($response->content, 'ok 15');
+
 sub soap_xml_post {
     my $path = shift;
     my $content = shift;
@@ -146,7 +152,7 @@ sub soap_xml_post {
     $ENV{CONTENT_TYPE} ='application/soap+xml';
     $ENV{SCRIPT_NAME} = $path;
     $ENV{QUERY_STRING} = '';
-    $ENV{CATALYST_DEBUG} = 0;
+    $ENV{CATALYST_DEBUG} = 1;
     $ENV{REQUEST_METHOD} ='POST';
     $ENV{SERVER_PORT} ='80';
     $ENV{SERVER_NAME} ='pitombeira';
