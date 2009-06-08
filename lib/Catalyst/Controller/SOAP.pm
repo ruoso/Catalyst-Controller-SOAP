@@ -12,7 +12,7 @@
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
     use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
 
-    our $VERSION = '1.17';
+    our $VERSION = '1.18';
 
     __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
          ports wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths);
@@ -389,7 +389,6 @@
         }
 
         if ($envelope) {
-          $c->res->status(500) if $soap->fault;
           $c->log->debug("Outgoing XML: ".$envelope->toString()) if $c->debug;
           $c->res->content_type('text/xml; charset=UTF-8');
           $c->res->body(encode('utf8',$envelope->toString()));
