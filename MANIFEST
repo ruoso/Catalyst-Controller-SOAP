@@ -8,6 +8,7 @@ t/hello.wsdl
 t/hello2.wsdl
 t/hello3.wsdl
 t/hello4.wsdl
+t/hello5.wsdl
 t/PostApp.t
 t/lib/TestApp/Controller/WS.pm
 t/lib/TestApp/Controller/Root.pm
@@ -20,6 +21,7 @@ t/PostApp/lib/PostApp/Controller/WithWSDL.pm
 t/PostApp/lib/PostApp/Controller/WithWSDL2.pm
 t/PostApp/lib/PostApp/Controller/WithWSDL3.pm
 t/PostApp/lib/PostApp/Controller/WithWSDL4.pm
+t/PostApp/lib/PostApp/Controller/WithWSDL5.pm
 t/PostApp/lib/PostApp/Controller/WS.pm
 t/PostApp/lib/PostApp/Controller/Root.pm
 t/PostApp/lib/PostApp/Controller/WS2.pm
