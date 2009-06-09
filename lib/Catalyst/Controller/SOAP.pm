@@ -12,7 +12,7 @@
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
     use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
 
-    our $VERSION = '1.18';
+    our $VERSION = '1.19';
 
     __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
          ports wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths);
@@ -312,29 +312,29 @@
 
         if ($soap->fault) {
 
-            $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+            $envelope = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Envelope");
 
             $response->setDocumentElement($envelope);
 
-            my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
+            my $body = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Body");
 
             $envelope->appendChild($body);
 
-            my $fault = $response->createElementNS(NS_SOAP_ENV, "Fault");
+            my $fault = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Fault");
             $body->appendChild($fault);
 
             my $code = $response->createElement("faultcode");
             $fault->appendChild($code);
             my $codestr = $soap->fault->{code};
             if (my ($ns, $val) = $codestr =~ m/^\{(.+)\}(.+)$/) {
-                my $prefix = $code->lookupNamespacePrefix($ns);
+                my $prefix = $fault->lookupNamespacePrefix($ns);
                 if ($prefix) {
                     $code->appendText($prefix.':'.$val);
                 } else {
                     $code->appendText($val);
                 }
             } else {
-                $code->appendText($codestr);
+                $code->appendText('SOAP-ENV:'.$codestr);
             }
 
             my $faultstring = $response->createElement("faultstring");
@@ -357,15 +357,15 @@
         } else {
 
             if ($soap->string_return) {
-                $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+                $envelope = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Envelope");
                 $response->setDocumentElement($envelope);
-                my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
+                my $body = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Body");
                 $envelope->appendChild($body);
                 $body->appendText($soap->string_return);
             } elsif (my $lit = $soap->literal_return) {
-                $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+                $envelope = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Envelope");
                 $response->setDocumentElement($envelope);
-                my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
+                my $body = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Body");
                 $envelope->appendChild($body);
                 if (ref $lit eq 'XML::LibXML::NodeList') {
                     for ($lit->get_nodelist) {
@@ -375,9 +375,9 @@
                     $body->appendChild($lit);
                 }
             } elsif (my $cmp = $soap->compile_return) {
-                $envelope = $response->createElementNS(NS_SOAP_ENV, "Envelope");
+                $envelope = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Envelope");
                 $response->setDocumentElement($envelope);
-                my $body = $response->createElementNS(NS_SOAP_ENV, "Body");
+                my $body = $response->createElementNS(NS_SOAP_ENV, "SOAP-ENV:Body");
                 $envelope->appendChild($body);
                 die 'Tried to use compile_return without WSDL'
                   unless $self->wsdlobj;
