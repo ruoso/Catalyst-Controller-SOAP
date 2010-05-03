@@ -1,7 +1,8 @@
 { package Catalyst::Action::SOAP::RPCLiteral;
 
   use base qw/Catalyst::Action::SOAP/;
-  use Class::C3;
+  use MRO::Compat;
+  use mro 'c3';
 
   sub execute {
       my $self = shift;

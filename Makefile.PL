@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Catalyst::Controller::SOAP',
     VERSION_FROM      => 'lib/Catalyst/Controller/SOAP.pm', # finds $VERSION
-    PREREQ_PM         => { Catalyst::Runtime => 5.7011, XML::LibXML => 0, Class::C3 => 0,
+    PREREQ_PM         => { Catalyst::Runtime => 5.7011, XML::LibXML => 0, MRO::Compat => 0,
                            XML::Compile::SOAP => 2.03
                           },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005

@@ -6,13 +6,14 @@
     use XML::Compile::WSDL11;
     use XML::Compile::SOAP11;
     use UNIVERSAL qw(isa);
-    use Class::C3;
+    use MRO::Compat;
+    use mro 'c3';
     use Encode;
 
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
     use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
 
-    our $VERSION = '1.19';
+    our $VERSION = '1.20';
 
     __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
          ports wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths);
