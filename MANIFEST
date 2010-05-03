@@ -36,3 +36,8 @@ lib/Catalyst/Action/SOAP/RPCLiteral.pm
 lib/Catalyst/Controller/SOAP.pm
 lib/Catalyst/Controller/SOAP/RPC.pm
 lib/Catalyst/Controller/SOAP/DocumentLiteralWrapped.pm
+lib/Catalyst/Action/SOAP/RPCEncoded.pm
+t/lib/TestApp2.pm
+t/lib/TestApp2/Controller/WS.pm
+t/type-in-message.t
+t/type-in-message.wsdl
