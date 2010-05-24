@@ -13,7 +13,7 @@
     use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
     use constant NS_WSDLSOAP => "http://schemas.xmlsoap.org/wsdl/soap/";
 
-    our $VERSION = '1.21';
+    our $VERSION = '1.22';
 
     __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
          ports wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths);
@@ -258,7 +258,7 @@
                 if ($operation->style eq 'rpc') {
                   $self->encoders->{$name} = sub {
                     my ($doc, $data) = @_;
-                    my $element = $doc->createElementNS($out_namespace,$name);
+                    my $element = $doc->createElementNS($out_namespace,$name.'Response');
                     $element->appendChild($_) for map {
                       $_->{compiled_writer}->($doc, $data->{$_->{name}})
                     } @{$output_parts};

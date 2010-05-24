@@ -6,7 +6,7 @@ WriteMakefile(
     NAME              => 'Catalyst::Controller::SOAP',
     VERSION_FROM      => 'lib/Catalyst/Controller/SOAP.pm', # finds $VERSION
     PREREQ_PM         => { Catalyst::Runtime => 5.7011, XML::LibXML => 0, MRO::Compat => 0,
-                           XML::Compile::SOAP => 2.03, Moose => 0.90,
+                           XML::Compile::SOAP => 2.14, Moose => 0.90,
                           },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Catalyst/Controller/SOAP.pm', # retrieve abstract from module
