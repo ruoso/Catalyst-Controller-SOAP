@@ -5,7 +5,6 @@
     use XML::LibXML;
     use XML::Compile::WSDL11;
     use XML::Compile::SOAP11;
-    use UNIVERSAL qw(isa);
     use MRO::Compat;
     use mro 'c3';
     use Encode;
@@ -15,8 +14,9 @@
 
     our $VERSION = '1.22';
 
-    __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders
-         ports wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths);
+    __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders ports
+         wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths
+         doclitwrapped_endpoint_paths);
 
     # XXX - This is here as a temporary fix for a bug in _parse_attrs
     # that makes it impossible to return more than one
@@ -70,7 +70,6 @@
         return \%final_attributes;
     }
 
-
     sub __init_wsdlobj {
         my ($self, $c) = @_;
 
@@ -119,7 +118,7 @@
     }
 
     sub _parse_WSDLPort_attr {
-        my ($self, $c, $name, $value) = @_;
+        my ($self, $c, $name, $value, $wrapped) = @_;
 
         die 'Cannot use WSDLPort without WSDL.'
           unless $self->__init_wsdlobj($c);
@@ -143,10 +142,20 @@
         $c->log->debug("WSDLPort: [$name] [$value] [$path] [$style] [$use]")
           if $c->debug;
 
-        if ($style eq 'Document') {
+        if ($style eq 'Document' && !$wrapped) {
             return
               (
                Path => $path,
+               $self->_parse_SOAP_attr($c, $name, $style.$use)
+              );
+	} elsif ($style eq 'Document' && $wrapped) {
+            $self->doclitwrapped_endpoint_paths([]) unless $self->doclitwrapped_endpoint_paths;
+            $path =~ s/\/$//;
+            push @{$self->doclitwrapped_endpoint_paths}, $path
+              unless grep { $_ eq $path }
+                @{$self->doclitwrapped_endpoint_paths};
+            return
+              (
                $self->_parse_SOAP_attr($c, $name, $style.$use)
               );
         } else {
@@ -160,6 +169,13 @@
                $self->_parse_SOAP_attr($c, $name, $style.$use),
               );
         }
+    }
+
+    sub _parse_WSDLPortWrapped_attr {
+        my ($self, $c, $name, $value) = @_;
+	my %attrs = $self->_parse_WSDLPort_attr($c, $name, $value, 'wrapped');
+	delete $attrs{Path};
+	return %attrs;
     }
 
     # Let's create the rpc_endpoint action.
@@ -182,6 +198,22 @@
               );
             $c->dispatcher->register($c, $action);
         }
+
+        if ($self->doclitwrapped_endpoint_paths) {
+            my $namespace = $self->action_namespace($c);
+            my $action = $self->create_action
+              (
+               name => '___base_doclitwrapped_endpoint',
+               code => sub {  },
+               reverse => ($namespace ? $namespace.'/' : '') . '___base_doclitwrapped_endpoint',
+               namespace => $namespace,
+               class => (ref $self || $self),
+               attributes => { ActionClass => [ 'Catalyst::Action::SOAP::DocumentLiteralWrapped' ],
+                               Path => $self->doclitwrapped_endpoint_paths }
+              );
+            $c->dispatcher->register($c, $action);
+        }
+
     }
 
     sub _parse_SOAP_attr {

@@ -2,6 +2,8 @@
   use strict;
   use base qw(Catalyst::Controller::SOAP);
   sub rpc_endpoint :Path('') :ActionClass('SOAP::DocumentLiteralWrapped') { };
+
+
 };
 
 1;

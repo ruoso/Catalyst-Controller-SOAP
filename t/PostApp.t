@@ -1,6 +1,6 @@
 use strict;
 use warnings; 
-use Test::More tests => 16;
+use Test::More tests => 19;
 use lib 't/PostApp/lib';
 use Catalyst::Test 'PostApp';
 use HTTP::Request::Common;
@@ -149,14 +149,33 @@ $response = soap_xml_post
   ');
 is($response->content, 'ok 16');
 
+$response = soap_xml_post
+  ('/doclitwrapped','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><who xmlns="http://example.com/hello">World</who><greeting xmlns="http://example.com/hello">Blag</greeting></Body></Envelope>
+  ', 'http://example.com/Blag');
+is($response->content, 'Blag Blag World!');
+
+$response = soap_xml_post
+  ('/doclitwrapped','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><who xmlns="http://example.com/hello">World</who><greeting xmlns="http://example.com/hello">Hello</greeting></Body></Envelope>
+  ', 'http://example.com/Greet');
+like($response->content, qr/greeting[^>]+\>Greet Hello World\!\<\//, ' WSDLPort Document/Literal-Wrapped response: '.$response->content);
+
+$response = soap_xml_post
+  ('/doclitwrapped','
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><who xmlns="http://example.com/hello">World</who><greeting xmlns="http://example.com/hello">Hello</greeting></Body></Envelope>
+  ', 'http://example.com/Shout');
+like($response->content, qr/greeting[^>]+\>Shout Hello World\!\<\//, ' WSDLPort Document/Literal-Wrapped response: '.$response->content);
+
 sub soap_xml_post {
     my $path = shift;
     my $content = shift;
+    my $soap_action = shift || 'http://example.com/actions/Greet';
 
-    return request POST $path, 
+    return request POST $path,
         Content => $content,
-        Content_Type => 'application/soap+xml', 
-        SOAPAction => 'http://example.com/actions/Greet';
+        Content_Type => 'application/soap+xml',
+        SOAPAction => $soap_action;
 }
 
 1;
