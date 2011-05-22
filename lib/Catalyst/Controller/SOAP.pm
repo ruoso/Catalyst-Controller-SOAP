@@ -634,6 +634,73 @@ to the XML::Compile::Schema::compile() method.
       reader => {sloppy_integers => 1}, writer => {sloppy_integers => 1},
   };
 
+=head1 Support for Document/Literal-Wrapped
+
+Please make sure you read the documentation at
+L<Catalyst::Action::SOAP::DocumentLiteralWrapped> before using this
+feature.
+
+The support for Document/Literal-Wrapped works by faking RPC style
+even when the WSDL says the service is in the "Document" mode. The
+parameter used for the actual dispatch is the soapAction attribute.
+
+In practice, the endpoint of the action is an empty action that will
+redirect the request to the actual action based on the name of the
+soapAction. It uses the soap_action_prefix controller configuration
+variable to extract the name of the action.
+
+There is an important restriction in that fact. The name of the
+operation in the WSDL must match the suffix of the soapAction
+attribute.
+
+If you have a Document/Literal-Wrapped WSDL and rewriting it as
+RPC/Literal is not an option, take the following steps:
+
+=over
+
+=item Set the soap_action_prefix
+
+It is assumed that all operations in the port have a common prefix, it
+is also assumed that when the prefix is removed, the remaining string
+can be used as a subroutine name (i.e.: it should not contain
+additional slashes).
+
+  __PACKAGE__->config->{soap_action_prefix} = 'http://foo.com/bar/';
+
+=item Make sure the soapAction attribute is consistent with the operation name
+
+Since the dispatching mechanism is dissociated from the
+encoding/decoding process, the only way for this to work is to have
+the soapAction to be consistent with the operation name.
+
+  <!--- inside the WSDL binding section -->
+  <wsdl:operation name="Greet">
+      <soap:operation soapAction="http://foo.com/bar/Greet" />
+      <wsdl:input>
+  ...
+
+Note that the name of the operation is "Greet" and the soapAction
+attribute is the result of concatenating the soap_action_prefix and
+the name of the operation.
+
+=item Implement the action using the WSDLPortWrapped action attribute
+
+Instead of using the standard WSDLPort attribute, use the alternative
+implementation that will provide the extra dispatching.
+
+  sub Greet :WSDLPortWrapped('GreetPort') {
+     ...
+  }
+
+Note that the name of the sub is consistent with the name of the
+operation.
+
+=back
+
+But always try to refactor your WSDL as RPC/Literal instead, which is
+much more predictable and, in fact, is going to provide you a much
+more sane WSDL file.
+
 =head1 USING WSDL AND Catalyst::Test
 
 If you'd like to use the built-in server from Catalyst::Test with your
