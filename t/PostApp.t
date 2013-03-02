@@ -54,9 +54,9 @@ like($response->content, qr/greeting\>2 Hello World\!\<\//, ' Document/Literal W
 
 $response = soap_xml_post
   ('/withwsdl2/Greet','
-    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet xmlns="http://example.com/hello"><who>World</who><greeting>Hello</greeting><count>3</count></Greet></Body></Envelope>
+    <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body><Greet xmlns="http://example.com/hello"><who>World</who><greeting>Hello</greeting><count>312312312312312312313</count></Greet></Body></Envelope>
   ');
-like($response->content, qr/greeting[^>]+\>3 Hello World\!Math::BigInt\<\//, 'RPC Literal response: '.$response->content);
+like($response->content, qr/greeting[^>]+\>312312312312312312313 Hello World\!Math::BigInt\<\//, 'RPC Literal response: '.$response->content);
 # diag("/withwsdl2/Greet: ".$response->content);
 
 $response = soap_xml_post
@@ -66,12 +66,12 @@ $response = soap_xml_post
             <Greet xmlns="http://example.com/hello">
                <who>World</who>
                <greeting>Hello</greeting>
-               <count>4</count>
+               <count>4123123123123123123</count>
             </Greet>
          </Body>
     </Envelope>
   ');
-ok($response->content =~ /greeting[^>]+\>4 Hello World\!Math::BigInt\<\//, 'RPC Literal response: '.$response->content);
+ok($response->content =~ /greeting[^>]+\>4123123123123123123 Hello World\!Math::BigInt\<\//, 'RPC Literal response: '.$response->content);
 # diag("/withwsdl2/Greet: ".$response->content);
 
 $response = soap_xml_post
