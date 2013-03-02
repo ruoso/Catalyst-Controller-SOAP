@@ -18,58 +18,6 @@
          wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths
          doclitwrapped_endpoint_paths);
 
-    # XXX - This is here as a temporary fix for a bug in _parse_attrs
-    # that makes it impossible to return more than one
-    # "final_attribute", a patch was already submitted and should make
-    # into the next release.
-    sub _parse_attrs {
-        my ( $self, $c, $name, @attrs ) = @_;
-
-        my %raw_attributes;
-
-        foreach my $attr (@attrs) {
-
-            # Parse out :Foo(bar) into Foo => bar etc (and arrayify)
-
-            if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/ ) ) {
-
-                if ( defined $value ) {
-                    ( $value =~ s/^'(.*)'$/$1/ ) || ( $value =~ s/^"(.*)"/$1/ );
-                }
-                push( @{ $raw_attributes{$key} }, $value );
-            }
-        }
-
-        my $hash = (ref $self ? $self : $self->config); # hate app-is-class
-
-        if (exists $hash->{actions} || exists $hash->{action}) {
-            my $a = $hash->{actions} || $hash->{action};
-            %raw_attributes = ((exists $a->{'*'} ? %{$a->{'*'}} : ()),
-                               %raw_attributes,
-                               (exists $a->{$name} ? %{$a->{$name}} : ()));
-        }
-
-        my %final_attributes;
-
-        foreach my $key (keys %raw_attributes) {
-
-            my $raw = $raw_attributes{$key};
-
-            foreach my $value (ref($raw) eq 'ARRAY' ? @$raw : $raw) {
-
-                my $meth = "_parse_${key}_attr";
-                my %new_attributes;
-                if ( $self->can($meth) ) {
-                    %new_attributes = $self->$meth( $c, $name, $value );
-                }
-                push( @{ $final_attributes{$_} }, $new_attributes{$_} )
-                  for keys %new_attributes;
-            }
-        }
-
-        return \%final_attributes;
-    }
-
     sub __init_wsdlobj {
         my ($self, $c) = @_;
 

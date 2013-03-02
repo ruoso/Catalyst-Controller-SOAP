@@ -8,7 +8,7 @@ license: perl
 distribution_type: module
 requires:
   XML::LibXML: 0
-  Catalyst::Controller: 5.7000
+  Catalyst::Controller: 5.90017
   Class::C3: 0
   XML::Compile::SOAP: 2.03
 meta-spec:
