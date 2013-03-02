@@ -1,6 +1,6 @@
 { package Catalyst::Action::SOAP::RPCLiteral;
 
-  use base qw/Catalyst::Action::SOAP/;
+  use base 'Catalyst::Action::SOAP';
   use MRO::Compat;
   use mro 'c3';
 

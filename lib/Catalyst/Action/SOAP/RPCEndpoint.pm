@@ -1,7 +1,7 @@
 { package Catalyst::Action::SOAP::RPCEndpoint;
 
   use strict;
-  use base qw/Catalyst::Action::SOAP/;
+  use base 'Catalyst::Action::SOAP';
   use constant NS_SOAP_ENV => "http://schemas.xmlsoap.org/soap/envelope/";
   use UNIVERSAL;
 

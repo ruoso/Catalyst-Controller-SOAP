@@ -1,6 +1,6 @@
 {   package Catalyst::Action::SOAP::HTTPGet;
 
-    use base qw/Catalyst::Action::SOAP/;
+    use base 'Catalyst::Action::SOAP';
 
     sub execute {
         my $self = shift;

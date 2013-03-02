@@ -1,6 +1,6 @@
 { package Catalyst::Action::SOAP::DocumentLiteralWrapped;
   use strict;
-  use base qw(Catalyst::Action::SOAP);
+  use base 'Catalyst::Action::SOAP';
 
   sub execute {
       my $self = shift;
@@ -42,7 +42,7 @@ Wrapped SOAP ActionClass
 
  __PACKAGE__->{config}{soap_action_prefix} = 'http://foo/bar/';
 
- use base qw(Catalyst::Controller::SOAP::DocumentLiteralWrapped);
+ use base 'Catalyst::Controller::SOAP::DocumentLiteralWrapped';
  # or
  sub endpoint : Local ActionClass(SOAP::DocumentLiteralWrapped) { }
 

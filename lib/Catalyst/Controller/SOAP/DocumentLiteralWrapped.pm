@@ -1,6 +1,6 @@
 { package Catalyst::Controller::SOAP::DocumentLiteralWrapped;
   use strict;
-  use base qw(Catalyst::Controller::SOAP);
+  use base 'Catalyst::Controller::SOAP';
   sub rpc_endpoint :Path('') :ActionClass('SOAP::DocumentLiteralWrapped') { };
 
 
@@ -16,7 +16,7 @@ Catalyst::Controller::SOAP::DocumentLiteralWrapped - Helper controller for SOAP
 
 =head1 SYNOPSIS
 
- use base qw(Catalyst::Controller::SOAP::DocumentLiteralWrapped);
+ use base 'Catalyst::Controller::SOAP::DocumentLiteralWrapped';
  __PACKAGE__->{config}{soap_action_prefix} = 'http://foo/bar/';
 
 =head1 DESCRIPTION

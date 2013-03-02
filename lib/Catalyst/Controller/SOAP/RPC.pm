@@ -1,6 +1,6 @@
 { package Catalyst::Controller::SOAP::RPC;
   use strict;
-  use base qw(Catalyst::Controller::SOAP);
+  use base 'Catalyst::Controller::SOAP';
   sub rpc_endpoint :Path('') :ActionClass('SOAP::RPCEndpoint') {};
 };
 
@@ -14,7 +14,7 @@ Catalyst::Controller::SOAP::RPC - Helper controller for SOAP
 
 =head1 SYNOPSIS
 
- use base qw(Catalyst::Controller::SOAP::RPC);
+ use base 'Catalyst::Controller::SOAP::RPC';
 
 =head1 DESCRIPTION
 

@@ -1,6 +1,6 @@
 { package Catalyst::Action::SOAP;
 
-  use base qw/Catalyst::Action/;
+  use base 'Catalyst::Action';
   use XML::LibXML;
 
   __PACKAGE__->mk_accessors(qw/xml_parser/);

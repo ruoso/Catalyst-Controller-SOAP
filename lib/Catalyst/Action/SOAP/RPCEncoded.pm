@@ -1,8 +1,8 @@
 { package Catalyst::Action::SOAP::RPCEncoded;
 
-  use base qw/Catalyst::Action::SOAP/;
+  use base 'Catalyst::Action::SOAP';
 
-  __PACKAGE__->mk_accessors(qw/operations/);
+  __PACKAGE__->mk_accessors('operations');
 
   sub execute {
       my $self = shift;

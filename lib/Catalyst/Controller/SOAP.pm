@@ -1,7 +1,7 @@
 {   package Catalyst::Controller::SOAP;
 
     use strict;
-    use base qw/Catalyst::Controller/;
+    use base 'Catalyst::Controller';
     use XML::LibXML;
     use XML::Compile::WSDL11;
     use XML::Compile::SOAP11;
@@ -14,9 +14,9 @@
 
     our $VERSION = '1.23';
 
-    __PACKAGE__->mk_accessors qw(wsdl wsdlobj decoders encoders ports
+    __PACKAGE__->mk_accessors (qw(wsdl wsdlobj decoders encoders ports
          wsdlservice xml_compile soap_action_prefix rpc_endpoint_paths
-         doclitwrapped_endpoint_paths);
+         doclitwrapped_endpoint_paths));
 
     sub __init_wsdlobj {
         my ($self, $c) = @_;
@@ -383,7 +383,7 @@
 
 {   package Catalyst::Controller::SOAP::Helper;
 
-    use base qw(Class::Accessor::Fast);
+    use base 'Class::Accessor::Fast';
 
     __PACKAGE__->mk_accessors(qw{envelope parsed_envelope arguments fault namespace
                                  encoded_return literal_return string_return
@@ -660,7 +660,7 @@ option available with $wsdl->compileClient() in your test file.
     # t/soap_message.t
     use XML::Compile::WSDL11;
     use XML::Compile::Transport::SOAPHTTP;
-    use Test::More qw(no_plan);
+    use Test::More 'no_plan';
 
     BEGIN {
         use_ok 'Catalyst::Test', 'MyServer';
