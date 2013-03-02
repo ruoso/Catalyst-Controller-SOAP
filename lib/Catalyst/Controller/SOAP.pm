@@ -262,7 +262,7 @@
         }
 
         my $actionclass = ($value =~ /^\+/ ? $value :
-          'Catalyst::Action::SOAP::'.$value);
+          'SOAP::'.$value);
         (
          ActionClass => $actionclass,
         )
