@@ -1,3 +1,5 @@
+releases/1.25 -- Sat, 3 Mar 2013 13:13:25 -0500
+  xxxxxx Daniel Ruoso <daniel@ruoso.com> META.yml was incorrectly in source control, versioned dependencies should be declared in Makefile.PL
 releases/1.24 -- Sat, 2 Mar 2013 13:13:25 -0500
   2cf0e7 Daniel Ruoso <daniel@ruoso.com> Silence XML::Compile error in the test that we expect to fail
   645cca2 Daniel Ruoso <daniel@ruoso.com> XML::Compile got smarter about Math::BigInt
